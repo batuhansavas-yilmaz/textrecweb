@@ -18,7 +18,7 @@ Fotoğraftaki yazıyı metne çeviren, **tamamen tarayıcıda çalışan** küç
 - Sonucu düzenleme, araç menüsüyle yakınlaştırma ve tek dokunuşla kopyalama
 - `.txt`, Word (`.docx`) ve PDF (`.pdf`) olarak indirme; dosya adını sen belirlersin (PDF'te Türkçe karakterler gömülü Rubik fontu ile sorunsuzdur)
 - İndirme sonrası başarı penceresi: dosyayı aç / paylaş (destekleyen tarayıcılarda) / kapat
-- Tarama animasyonlu ana ekran, açık/koyu tema otomatik, mobil uyumlu arayüz
+- Tarama animasyonlu ana ekran; masaüstünde tam genişlik şerit, solda görsel ve sağda alt alta butonlar, sonuçta geniş okuma alanı; açık/koyu tema otomatik, mobil uyumlu arayüz
 
 ## Yerel çalıştırma
 

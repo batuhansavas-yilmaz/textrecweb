@@ -532,3 +532,41 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px
   .toast { background: #ececec; color: #111; }
   .paper { border-color: #1c1c1c; }
 }
+
+/* ---------- Desktop ---------- */
+
+@media (min-width: 700px) {
+  #app { max-width: none; }
+
+  #homeView {
+    display: grid;
+    width: 100%;
+    max-width: 1120px;
+    margin: 0 auto;
+    grid-template-columns: 1.05fr 0.95fr;
+    grid-template-rows: 1fr auto;
+    align-items: center;
+    justify-items: center;
+    column-gap: clamp(40px, 7vw, 110px);
+    row-gap: 6px;
+    padding: 24px clamp(28px, 5vw, 72px) 18px;
+  }
+
+  #animPaper { grid-column: 1; grid-row: 1; height: min(480px, 56vh); margin: 0; }
+
+  .home-btns { grid-column: 2; grid-row: 1; flex-direction: column; gap: 30px; }
+
+  #homeCaption { grid-column: 1 / -1; grid-row: 2; font-size: 22px; }
+
+  #resultView { padding: 22px clamp(24px, 7vw, 140px) 22px; }
+
+  #resultText {
+    width: 100%;
+    max-width: 980px;
+    margin: 0 auto;
+    line-height: 1.6;
+    padding: 10px 2px 14px;
+  }
+
+  #fabs { right: 24px; bottom: 24px; }
+}
