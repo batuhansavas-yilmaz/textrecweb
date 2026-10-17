@@ -262,6 +262,29 @@
     });
   }
 
+  function ocrParagraphs(data) {
+    var blocks = data && data.blocks;
+    if (!blocks || !blocks.length) return '';
+    var paras = [];
+    blocks.forEach(function (block) {
+      (block.paragraphs || []).forEach(function (para) {
+        var merged = '';
+        (para.lines || []).forEach(function (line) {
+          var t = (line.text || '').replace(/\s+/g, ' ').trim();
+          if (!t) return;
+          if (!merged) { merged = t; return; }
+          if (/[A-Za-zÇĞİÖŞÜçğıöşü]-$/.test(merged) && /^[a-zçğıöşü]/.test(t)) {
+            merged = merged.slice(0, -1) + t;
+          } else {
+            merged += ' ' + t;
+          }
+        });
+        if (merged) paras.push(merged);
+      });
+    });
+    return paras.join('\n\n');
+  }
+
   function runOcrFlow() {
     if (location.protocol === 'file:') {
       toast(t('toastErrFileProtocol'), 9000);
@@ -273,11 +296,13 @@
     ensureWorker(OCR_LANGS)
       .then(function (w) {
         return prepareImage(imageFile).then(function (blob) {
-          return w.recognize(blob);
+          return w.recognize(blob, {}, { text: true, blocks: true });
         });
       })
       .then(function (res) {
-        var text = res && res.data && res.data.text ? res.data.text : '';
+        var data = res && res.data ? res.data : {};
+        var text = ocrParagraphs(data);
+        if (!text && data.text) text = data.text;
         text = text.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
         busy = false;
         loadingDialog.hidden = true;

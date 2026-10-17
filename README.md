@@ -14,7 +14,7 @@ Fotoğraftaki yazıyı metne çeviren, **tamamen tarayıcıda çalışan** küç
 - Kamera ile çekme, galeriden/bilgisayardan seçme, sürükle-bırak, panodan yapıştırma
 - İsteğe bağlı kırpma adımı (Cropper.js)
 - Arayüz dili sistemine göre otomatik: Türkçe / İngilizce / Rusça (diğer dillerde İngilizce)
-- Yazı tanıma Türkçe + İngilizce
+- Yazı tanıma Türkçe + İngilizce; satırlar paragraf akışına göre birleştirilir (kelime kelime dökmez)
 - Sonucu düzenleme, araç menüsüyle yakınlaştırma ve tek dokunuşla kopyalama
 - `.txt`, Word (`.docx`) ve PDF (`.pdf`) olarak indirme; dosya adını sen belirlersin (PDF'te Türkçe karakterler gömülü Rubik fontu ile sorunsuzdur)
 - İndirme sonrası başarı penceresi: dosyayı aç / paylaş (destekleyen tarayıcılarda) / kapat
