@@ -14,6 +14,7 @@
   --warn-red: #972921;
   --succ-green: #0b633e;
   --barrier: rgba(0, 0, 0, 0.54);
+  --guide: rgba(0, 0, 0, 0.28);
   --txt: #000;
   --scaffold: #fff;
   --appbar: var(--blue);
@@ -516,6 +517,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px
     --appbar: var(--dark-appbar);
     --btn: var(--dark-appbar);
     --dialog-bg: var(--dark-dialog);
+    --guide: rgba(255, 255, 255, 0.34);
   }
 
   #resultText { border-bottom-color: #fff; }
@@ -554,7 +556,10 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px
 
   #animPaper { grid-column: 1; grid-row: 1; height: min(480px, 56vh); margin: 0; }
 
-  .home-btns { grid-column: 2; grid-row: 1; flex-direction: column; gap: 30px; }
+  .home-btns { grid-column: 2; grid-row: 1; flex-direction: column; gap: 34px; }
+
+  #cameraBtn, #photosBtn { width: 160px; height: 64px; font-size: 15px; }
+  .btn-elev .ic { width: 24px; height: 24px; }
 
   #homeCaption { grid-column: 1 / -1; grid-row: 2; font-size: 22px; }
 
@@ -565,8 +570,14 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px
     max-width: 980px;
     margin: 0 auto;
     line-height: 1.6;
-    padding: 10px 2px 14px;
+    padding: 10px 16px 14px;
+    border-left: 1px solid var(--guide);
+    border-right: 1px solid var(--guide);
   }
 
-  #fabs { right: 24px; bottom: 24px; }
+  #fabs { right: 24px; bottom: 24px; flex-direction: row; gap: 10px; }
+  #fabMain { display: none; }
+  #fabs.collapsed .mini-fab { opacity: 1; transform: none; pointer-events: auto; }
+  .mini-fab { width: 42px; height: 42px; }
+  .mini-fab .ic { width: 18px; height: 18px; }
 }
