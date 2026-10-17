@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>TextRec</title>
+  <meta name="description" content="TextRec — scan text in a photo and turn it into editable text. On-device OCR, nothing is uploaded." />
+  <meta name="color-scheme" content="light dark" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230087F5'/%3E%3Cpath d='M12 9h8.5L24 12.5V23a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2z' fill='%23fff'/%3E%3Cpath d='M15 15.5h7M15 19.5h7' stroke='%230087F5' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="vendor/cropperjs/cropper.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <header id="appbar">
+      <button id="backBtn" type="button" hidden data-i18n-aria="ariaBack">
+        <span class="ic" style="--i:url('vendor/icons/mi-arrow_back.svg')"></span>
+      </button>
+      <h1 id="appbarTitle" data-i18n="appbarTitle">Scan Text in Photo</h1>
+    </header>
+
+    <main id="homeView">
+      <div id="animPaper" aria-hidden="true">
+        <span class="corner c-tl"></span>
+        <span class="corner c-tr"></span>
+        <span class="corner c-bl"></span>
+        <span class="corner c-br"></span>
+        <div class="paper">
+          <p id="animTitle" data-i18n="animTitle">Snap,Scan,Save..</p>
+          <p id="animSubtitle" data-i18n="animSubtitle">Perform text scanning in an easy way.</p>
+          <p id="animFooter" data-i18n="animFooter">To make life easier From B.S.Y</p>
+          <div id="scanLine"></div>
+        </div>
+      </div>
+      <p id="homeCaption">TextRec</p>
+      <div class="home-btns">
+        <button id="cameraBtn" class="btn-elev" type="button">
+          <span class="ic" style="--i:url('vendor/icons/mi-camera_alt.svg')"></span>
+          <span data-i18n="btnCamera">Camera</span>
+        </button>
+        <button id="photosBtn" class="btn-elev" type="button">
+          <span class="ic" style="--i:url('vendor/icons/mi-photo.svg')"></span>
+          <span data-i18n="btnPhotos">Photos</span>
+        </button>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" hidden />
+      <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden />
+    </main>
+
+    <main id="resultView" hidden>
+      <textarea id="resultText" spellcheck="false" aria-label="Recognized text"></textarea>
+      <div id="fabs" class="collapsed">
+        <button class="mini-fab" id="fabZoomOut" type="button" data-i18n-aria="ariaZoomOut">
+          <span class="ic" style="--i:url('vendor/icons/fa-magnifying-glass-minus.svg')"></span>
+        </button>
+        <button class="mini-fab" id="fabZoomIn" type="button" data-i18n-aria="ariaZoomIn">
+          <span class="ic" style="--i:url('vendor/icons/fa-magnifying-glass-plus.svg')"></span>
+        </button>
+        <button class="mini-fab" id="fabCopy" type="button" data-i18n-aria="ariaCopy">
+          <span class="ic" style="--i:url('vendor/icons/fa-copy.svg')"></span>
+        </button>
+        <button class="mini-fab" id="fabDownload" type="button" data-i18n-aria="ariaDownload">
+          <span class="ic" style="--i:url('vendor/icons/fa-download.svg')"></span>
+        </button>
+        <button class="main-fab" id="fabMain" type="button" data-i18n-aria="ariaMenu">
+          <img id="fabIconClose" src="assets/toolbox-close.webp" alt="" hidden />
+          <span class="ic" id="fabIconToolbox" style="--i:url('vendor/icons/fa-toolbox.svg')"></span>
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <div class="overlay" id="cropDialog" hidden>
+    <div class="dialog" role="dialog" aria-modal="true">
+      <img class="dlg-img" src="assets/crop.png" alt="" />
+      <p class="dlg-text" data-i18n="cropTitle">Do you want crop ?</p>
+      <div class="dlg-actions">
+        <button id="cropYes" type="button" data-i18n="yes">YES</button>
+        <button id="cropNo" type="button" data-i18n="no">NO</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay blur" id="loadingDialog" hidden>
+    <div class="loading-card" role="status" data-i18n-aria="statusOcr">
+      <div class="spinner">
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay blur" id="warnDialog" hidden>
+    <div class="dialog" role="alertdialog" aria-modal="true">
+      <img class="dlg-img" src="assets/warning.png" alt="" />
+      <p class="warn-text" data-i18n="warnText">No text was detected in the photo.
+Please try another photo.</p>
+      <div class="dlg-actions">
+        <button id="warnOk" type="button" data-i18n="ok">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay crop-screen" id="cropScreen" hidden>
+    <header class="crop-bar">
+      <button id="cropCancel" type="button" data-i18n-aria="ariaCropCancel">
+        <span class="ic" style="--i:url('vendor/icons/mi-close.svg')"></span>
+      </button>
+      <span class="crop-title" data-i18n="cropScreenTitle">Crop Image</span>
+      <button id="cropConfirm" type="button" data-i18n-aria="ariaCropConfirm">
+        <span class="ic" style="--i:url('vendor/icons/mi-done.svg')"></span>
+      </button>
+    </header>
+    <div class="crop-stage">
+      <img id="cropImage" alt="" />
+    </div>
+  </div>
+
+  <div class="overlay" id="docTypeDialog" hidden>
+    <div class="dialog" role="dialog" aria-modal="true">
+      <p class="dlg-title" data-i18n="docTypeTitle">Document Type</p>
+      <div class="doc-options">
+        <button class="doc-option" id="docWord" type="button">
+          <span class="ic" style="--i:url('vendor/icons/fa-file-word.svg')"></span>
+          <span class="doc-body">
+            <span data-i18n="docWordLabel">Word Document</span>
+            <span class="doc-ext">(.docx)</span>
+          </span>
+        </button>
+        <button class="doc-option" id="docPdf" type="button">
+          <span class="ic" style="--i:url('vendor/icons/fa-file-pdf.svg')"></span>
+          <span class="doc-body">
+            <span data-i18n="docPdfLabel">PDF Document</span>
+            <span class="doc-ext">(.pdf)</span>
+          </span>
+        </button>
+        <button class="doc-option" id="docText" type="button">
+          <span class="ic" style="--i:url('vendor/icons/fa-file-lines.svg')"></span>
+          <span class="doc-body">
+            <span data-i18n="docTextLabel">Text Document</span>
+            <span class="doc-ext">(.txt)</span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="nameDialog" hidden>
+    <div class="dialog" role="dialog" aria-modal="true">
+      <p class="dlg-title" data-i18n="nameTitle">Enter name</p>
+      <input id="nameInput" type="text" value="" autocomplete="off" spellcheck="false" data-i18n-aria="nameLabel" />
+      <p id="nameError" class="name-error" hidden data-i18n="nameError">Please enter name</p>
+      <div class="dlg-actions">
+        <button id="nameSave" type="button" data-i18n-aria="ariaCropConfirm">
+          <span class="ic" style="--i:url('vendor/icons/mi-done.svg')"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay blur" id="successDialog" hidden>
+    <div class="dialog" role="dialog" aria-modal="true">
+      <img class="dlg-img" src="assets/succsess.png" alt="" />
+      <p class="succ-msg"><span data-i18n="succLine1">Please check the</span> <b data-i18n="succLine2">DOWNLOAD</b><br /><span data-i18n="succLine3">folder.</span></p>
+      <p class="succ-name"><span data-i18n="succNamePrefix">File name: </span><em id="succFileName"></em></p>
+      <div class="dlg-actions icons">
+        <button id="succOpen" type="button" data-i18n-aria="btnOpen">
+          <span class="ic" style="--i:url('vendor/icons/mi-file_open.svg')"></span>
+        </button>
+        <button id="succShare" type="button" data-i18n-aria="btnShare">
+          <span class="ic" style="--i:url('vendor/icons/mi-share.svg')"></span>
+        </button>
+        <button id="succClose" type="button" data-i18n-aria="btnClose">
+          <span class="ic" style="--i:url('vendor/icons/mi-close.svg')"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toasts" aria-live="polite"></div>
+
+  <script src="vendor/cropperjs/cropper.min.js"></script>
+  <script src="vendor/pdffont_base64.js"></script>
+  <script src="vendor/tesseract/tesseract.min.js"></script>
+  <script src="vendor/docx.umd.js"></script>
+  <script src="vendor/jspdf.umd.min.js"></script>
+  <script src="strings.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
