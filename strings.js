@@ -41,7 +41,11 @@ window.TEXTREC_STR = {
     toastCopyFail: 'Kopyalanamadı — metni elle seçin',
     toastNotImage: 'Lütfen bir fotoğraf dosyası seçin',
     toastErrOcr: 'Tanıma sırasında bir hata oluştu',
-    toastErrFileProtocol: 'Bu sayfa dosyadan (file://) açıldığı için OCR çalışamaz. Klasördeki "sunucu-baslat.bat" dosyasına çift tıklayın ya da "python -m http.server 8000" çalıştırıp http://localhost:8000 adresini açın.'
+    toastErrFileProtocol: 'Bu sayfa dosyadan (file://) açıldığı için OCR çalışamaz. Klasördeki "sunucu-baslat.bat" dosyasına çift tıklayın ya da "python -m http.server 8000" çalıştırıp http://localhost:8000 adresini açın.',
+    toastShareUnsupported: 'Bu tarayıcı dosya paylaşımını desteklemiyor',
+    toastShareFailed: 'Paylaşım açılamadı',
+    toastOpenUnsupported: 'Bu dosya türü tarayıcıda açılamıyor; İndirilenler klasöründen açabilirsin',
+    toastOpenBlocked: 'Yeni sekme açılamadı; tarayıcı izin vermiyor olabilir'
   },
   en: {
     appbarTitle: 'Scan Text in Photo',
@@ -85,7 +89,11 @@ window.TEXTREC_STR = {
     toastCopyFail: 'Could not copy — select the text manually',
     toastNotImage: 'Please choose an image file',
     toastErrOcr: 'Something went wrong during recognition',
-    toastErrFileProtocol: 'OCR cannot run because this page was opened from a local file (file://). Double-click "sunucu-baslat.bat" in the folder, or run "python -m http.server 8000" and open http://localhost:8000.'
+    toastErrFileProtocol: 'OCR cannot run because this page was opened from a local file (file://). Double-click "sunucu-baslat.bat" in the folder, or run "python -m http.server 8000" and open http://localhost:8000.',
+    toastShareUnsupported: 'This browser does not support file sharing',
+    toastShareFailed: 'Could not open the share sheet',
+    toastOpenUnsupported: "This file type can't be opened in the browser; open it from your Downloads folder",
+    toastOpenBlocked: 'Could not open a new tab; the browser may be blocking it'
   },
   ru: {
     appbarTitle: 'Сканировать текст',
@@ -129,6 +137,10 @@ window.TEXTREC_STR = {
     toastCopyFail: 'Не удалось скопировать — выделите текст вручную',
     toastNotImage: 'Выберите файл изображения',
     toastErrOcr: 'Ошибка при распознавании',
-    toastErrFileProtocol: 'OCR не работает при открытии файла напрямую (file://). Запустите "sunucu-baslat.bat" или выполните "python -m http.server 8000" и откройте http://localhost:8000.'
+    toastErrFileProtocol: 'OCR не работает при открытии файла напрямую (file://). Запустите "sunucu-baslat.bat" или выполните "python -m http.server 8000" и откройте http://localhost:8000.',
+    toastShareUnsupported: 'Этот браузер не поддерживает обмен файлами',
+    toastShareFailed: 'Не удалось открыть меню «Поделиться»',
+    toastOpenUnsupported: 'Этот тип файла нельзя открыть в браузере; откройте его из папки «Загрузки»',
+    toastOpenBlocked: 'Не удалось открыть новую вкладку; возможно, браузер её блокирует'
   }
 };

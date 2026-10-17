@@ -587,14 +587,35 @@
     if (nameInput.value.trim()) nameError.hidden = true;
   });
 
+  function canShareFile(file) {
+    try {
+      return !!(navigator.share && navigator.canShare && file && navigator.canShare({ files: [file] }));
+    } catch (e) {
+      return false;
+    }
+  }
+
   succOpen.addEventListener('click', function () {
-    if (lastFileUrl) window.open(lastFileUrl, '_blank');
+    if (!lastFile || !lastFileUrl) return;
+    var ext = (lastFile.name.split('.').pop() || '').toLowerCase();
+    if (ext !== 'txt' && ext !== 'pdf') {
+      toast(t('toastOpenUnsupported'), 4200);
+      return;
+    }
+    var win = window.open(lastFileUrl, '_blank');
+    if (!win) toast(t('toastOpenBlocked'));
   });
 
   succShare.addEventListener('click', function () {
-    if (!lastFile || !navigator.share || !navigator.canShare) return;
-    if (!navigator.canShare({ files: [lastFile] })) return;
-    navigator.share({ files: [lastFile], title: lastFile.name }).catch(function () {});
+    if (!lastFile) return;
+    if (!canShareFile(lastFile)) {
+      toast(t('toastShareUnsupported'), 4200);
+      return;
+    }
+    navigator.share({ files: [lastFile], title: lastFile.name }).catch(function (err) {
+      if (err && err.name === 'AbortError' && /cancel/i.test(err.message || '')) return;
+      toast(t('toastShareFailed'), 4200);
+    });
   });
 
   succClose.addEventListener('click', function () {

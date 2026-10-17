@@ -17,7 +17,7 @@ Fotoğraftaki yazıyı metne çeviren, **tamamen tarayıcıda çalışan** küç
 - Yazı tanıma Türkçe + İngilizce; satırlar paragraf akışına göre birleştirilir (kelime kelime dökmez)
 - Sonucu düzenleme, araç menüsüyle yakınlaştırma ve tek dokunuşla kopyalama
 - `.txt`, Word (`.docx`) ve PDF (`.pdf`) olarak indirme; dosya adını sen belirlersin (PDF'te Türkçe karakterler gömülü Rubik fontu ile sorunsuzdur)
-- İndirme sonrası başarı penceresi: dosyayı aç / paylaş (destekleyen tarayıcılarda) / kapat
+- İndirme sonrası başarı penceresi: PDF/TXT tarayıcıda önizleme, dosya paylaşımı (destekleyen tarayıcılarda), kapat
 - Tarama animasyonlu ana ekran; masaüstünde tam genişlik şerit, solda görsel ve sağda alt alta butonlar, sonuçta geniş okuma alanı; açık/koyu tema otomatik, mobil uyumlu arayüz
 
 ## Yerel çalıştırma
