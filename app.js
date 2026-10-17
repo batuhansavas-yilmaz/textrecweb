@@ -374,8 +374,13 @@
 
   function setFabsCollapsed(collapsed) {
     fabs.classList.toggle('collapsed', collapsed);
-    fabIconToolbox.hidden = !collapsed;
-    fabIconClose.hidden = collapsed;
+    if (collapsed) {
+      fabIconToolbox.removeAttribute('hidden');
+      fabIconClose.setAttribute('hidden', '');
+    } else {
+      fabIconToolbox.setAttribute('hidden', '');
+      fabIconClose.removeAttribute('hidden');
+    }
   }
 
   function applySize() {
