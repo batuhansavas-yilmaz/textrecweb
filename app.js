@@ -754,6 +754,23 @@
     });
   }
 
+  function syncThemeColor() {
+    var bar = document.getElementById('appbar');
+    if (!bar) return;
+    var bg = getComputedStyle(bar).backgroundColor;
+    var metas = document.querySelectorAll('meta[name="theme-color"]');
+    for (var i = 0; i < metas.length; i++) metas[i].setAttribute('content', bg);
+  }
+
+  syncThemeColor();
+
+  if (window.matchMedia) {
+    var schemeMq = window.matchMedia('(prefers-color-scheme: dark)');
+    var onSchemeChange = function () { syncThemeColor(); };
+    if (schemeMq.addEventListener) schemeMq.addEventListener('change', onSchemeChange);
+    else if (schemeMq.addListener) schemeMq.addListener(onSchemeChange);
+  }
+
   applyLang();
 
   if (location.protocol === 'file:') {
