@@ -6,7 +6,7 @@ Fotoğraftaki yazıyı metne çeviren, **tamamen tarayıcıda çalışan** küç
 
 - OCR (yazı tanıma) [Tesseract.js](https://github.com/naptha/tesseract.js) ile **senin cihazında** yapılır. Fotoğraf hiçbir sunucuya yüklenmez.
 - Metin düzenleme, `.txt` / `.docx` / `.pdf` üretimi de tarayıcıda gerçekleşir.
-- Uygulama **hiçbir veri kaydetmez**: çerez yok, localStorage yok, önbellek yok. Sekmeyi kapatınca fotoğraf ve metin tamamen silinir.
+- Uygulama **hiçbir veri kaydetmez**: çerez yok, localStorage yok, içerik önbelleği yok. Sekmeyi kapatınca fotoğraf ve metin tamamen silinir. Kurulabilirlik için yalnızca bir service worker kaydedilir; bu da fotoğraf veya metin saklamaz.
 - Sunucu tarafı (backend) yoktur; statik dosyalardan oluşur. Bu yüzden GitHub Pages gibi ücretsiz bir yere konabilir.
 
 ## Özellikler
@@ -19,6 +19,15 @@ Fotoğraftaki yazıyı metne çeviren, **tamamen tarayıcıda çalışan** küç
 - `.txt`, Word (`.docx`) ve PDF (`.pdf`) olarak indirme; dosya adını sen belirlersin (PDF'te Türkçe karakterler gömülü Rubik fontu ile sorunsuzdur)
 - İndirme sonrası başarı penceresi: PDF/TXT tarayıcıda önizleme, dosya paylaşımı (destekleyen tarayıcılarda), kapat
 - Tarama animasyonlu ana ekran; masaüstünde tam genişlik şerit, solda görsel ve sağda alt alta butonlar, sonuçta geniş okuma alanı; açık/koyu tema otomatik, mobil uyumlu arayüz
+- Masaüstüne veya ana ekrana yüklenebilen PWA; kendi simgesiyle açılır
+
+## Uygulama olarak yükleme (PWA)
+
+- **PC (Chrome/Edge):** Adres çubuğundaki yükle simgesi.
+- **Android (Chrome):** Menü → **Ana ekrana ekle**.
+- **iPhone/iPad (Safari):** Paylaş → **Ana Ekrana Ekle**.
+
+Kurulum için `manifest.webmanifest` ve `sw.js` eklidir. Service worker yalnızca kurulabilirliği sağlar; fotoğraf veya metin önbelleklemez.
 
 ## Yerel çalıştırma
 

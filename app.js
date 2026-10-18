@@ -113,6 +113,88 @@
     imageFile = null;
   }
 
+  var PAGE_MS = 360;
+  var PAGE_EASE = 'cubic-bezier(0.32, 0.72, 0, 1)';
+
+  function motionReduced() {
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  function pageSlide(el, from, to, done) {
+    if (el._pageT) clearTimeout(el._pageT);
+    if (motionReduced()) {
+      el.style.transition = '';
+      el.style.transform = '';
+      if (done) done();
+      return;
+    }
+    el.style.transition = 'none';
+    el.style.transform = from;
+    void el.offsetWidth;
+    el.style.transition = 'transform ' + PAGE_MS + 'ms ' + PAGE_EASE;
+    el.style.transform = to;
+    el._pageT = setTimeout(function () {
+      el._pageT = null;
+      el.style.transition = '';
+      el.style.transform = '';
+      if (done) done();
+    }, PAGE_MS + 20);
+  }
+
+  var DIALOG_MS = 250;
+
+  function dialogOpen(el) {
+    if (el._dlgT) { clearTimeout(el._dlgT); el._dlgT = null; }
+    el.classList.remove('closing');
+    el.hidden = false;
+    if (motionReduced()) { el.classList.add('open'); return; }
+    void el.offsetWidth;
+    el.classList.add('open');
+  }
+
+  function dialogClose(el, done) {
+    if (el.hidden) { if (done) done(); return; }
+    if (el._dlgT) { clearTimeout(el._dlgT); el._dlgT = null; }
+    if (motionReduced()) {
+      el.classList.remove('open');
+      el.classList.remove('closing');
+      el.hidden = true;
+      if (done) done();
+      return;
+    }
+    el.classList.add('closing');
+    el._dlgT = setTimeout(function () {
+      el._dlgT = null;
+      el.classList.remove('open');
+      el.classList.remove('closing');
+      el.hidden = true;
+      if (done) done();
+    }, DIALOG_MS + 20);
+  }
+
+  function dialogHideNow(el) {
+    if (el.classList.contains('closing')) return;
+    if (el._dlgT) { clearTimeout(el._dlgT); el._dlgT = null; }
+    el.classList.remove('open');
+    el.classList.remove('closing');
+    el.hidden = true;
+  }
+
+  document.addEventListener('pointerdown', function (e) {
+    var btn = e.target && e.target.closest ? e.target.closest('button') : null;
+    if (!btn || btn.disabled || motionReduced()) return;
+    var rect = btn.getBoundingClientRect();
+    var size = Math.max(rect.width, rect.height) * 1.6;
+    var ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    ripple.style.width = size + 'px';
+    ripple.style.height = size + 'px';
+    ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+    ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+    btn.appendChild(ripple);
+    setTimeout(function () { ripple.remove(); }, 560);
+  }, { passive: true });
+
   function pickFile(file) {
     if (!file || busy) return;
     if (!file.type || file.type.indexOf('image/') !== 0) {
@@ -120,22 +202,28 @@
       return;
     }
     setImage(file);
-    cropDialog.hidden = false;
+    dialogOpen(cropDialog);
   }
 
   function goHome() {
-    cropDialog.hidden = true;
-    cropScreen.hidden = true;
-    loadingDialog.hidden = true;
-    warnDialog.hidden = true;
-    docTypeDialog.hidden = true;
-    nameDialog.hidden = true;
-    successDialog.hidden = true;
+    var fromResult = !resultView.hidden;
+    dialogHideNow(cropDialog);
+    dialogHideNow(loadingDialog);
+    dialogHideNow(warnDialog);
+    dialogHideNow(docTypeDialog);
+    dialogHideNow(nameDialog);
+    dialogHideNow(successDialog);
     if (cropper) { cropper.destroy(); cropper = null; }
     if (lastFileUrl) { URL.revokeObjectURL(lastFileUrl); lastFileUrl = null; }
     lastFile = null;
-    resultView.hidden = true;
     homeView.hidden = false;
+    if (fromResult) {
+      pageSlide(homeView, 'translateX(-30%)', 'translateX(0)');
+      pageSlide(resultView, 'translateX(0)', 'translateX(100%)', function () { resultView.hidden = true; });
+    } else {
+      resultView.hidden = true;
+    }
+    cropScreen.hidden = true;
     backBtn.hidden = true;
     appbarTitle.textContent = t('appbarTitle');
     clearImage();
@@ -144,6 +232,7 @@
   function openCropScreen() {
     cropImage.src = imageUrl;
     cropScreen.hidden = false;
+    pageSlide(cropScreen, 'translateY(100%)', 'translateY(0)');
     if (cropper) { cropper.destroy(); cropper = null; }
     cropper = new Cropper(cropImage, {
       viewMode: 1,
@@ -166,7 +255,9 @@
     if (!canvas) return;
     cropper.destroy();
     cropper = null;
-    cropScreen.hidden = true;
+    pageSlide(cropScreen, 'translateY(0)', 'translateY(100%)', function () {
+      cropScreen.hidden = true;
+    });
     canvas.toBlob(function (blob) {
       if (blob) setImage(new File([blob], 'crop.jpg', { type: 'image/jpeg' }));
       runOcrFlow();
@@ -292,7 +383,7 @@
       return;
     }
     busy = true;
-    loadingDialog.hidden = false;
+    dialogOpen(loadingDialog);
     ensureWorker(OCR_LANGS)
       .then(function (w) {
         return prepareImage(imageFile).then(function (blob) {
@@ -305,9 +396,9 @@
         if (!text && data.text) text = data.text;
         text = text.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
         busy = false;
-        loadingDialog.hidden = true;
+        dialogClose(loadingDialog);
         if (!text) {
-          warnDialog.hidden = false;
+          dialogOpen(warnDialog);
           return;
         }
         showResult(text);
@@ -315,7 +406,7 @@
       .catch(function (err) {
         console.error(err);
         busy = false;
-        loadingDialog.hidden = true;
+        dialogClose(loadingDialog);
         toast(t('toastErrOcr'));
         goHome();
       });
@@ -328,34 +419,43 @@
     nameError.hidden = true;
     setFabsCollapsed(true);
     applySize();
-    homeView.hidden = true;
     resultView.hidden = false;
+    pageSlide(resultView, 'translateX(100%)', 'translateX(0)');
+    pageSlide(homeView, 'translateX(0)', 'translateX(-30%)', function () { homeView.hidden = true; });
     backBtn.hidden = false;
     appbarTitle.textContent = t('resultTitle');
   }
 
   cropYes.addEventListener('click', function () {
-    cropDialog.hidden = true;
+    dialogClose(cropDialog);
     openCropScreen();
   });
 
   cropNo.addEventListener('click', function () {
-    cropDialog.hidden = true;
+    dialogClose(cropDialog);
     runOcrFlow();
   });
 
   cropCancel.addEventListener('click', function () {
-    if (cropper) { cropper.destroy(); cropper = null; }
-    cropScreen.hidden = true;
-    clearImage();
+    pageSlide(cropScreen, 'translateY(0)', 'translateY(100%)', function () {
+      if (cropper) { cropper.destroy(); cropper = null; }
+      cropScreen.hidden = true;
+      clearImage();
+    });
   });
 
   cropConfirm.addEventListener('click', finishCrop);
 
-  warnOk.addEventListener('click', goHome);
+  warnOk.addEventListener('click', function () {
+    dialogClose(warnDialog);
+    goHome();
+  });
 
   warnDialog.addEventListener('click', function (e) {
-    if (e.target === warnDialog) goHome();
+    if (e.target === warnDialog) {
+      dialogClose(warnDialog);
+      goHome();
+    }
   });
 
   backBtn.addEventListener('click', goHome);
@@ -481,7 +581,7 @@
         a.click();
         a.remove();
         succFileName.textContent = filename;
-        successDialog.hidden = false;
+        dialogOpen(successDialog);
       })
       .catch(function (err) {
         console.error(err);
@@ -524,7 +624,7 @@
     pendingType = type;
     nameError.hidden = true;
     nameInput.value = '';
-    nameDialog.hidden = false;
+    dialogOpen(nameDialog);
     nameInput.focus();
   }
 
@@ -548,21 +648,21 @@
   fabDownload.addEventListener('click', function () {
     if (!resultText.value) return;
     setFabsCollapsed(true);
-    docTypeDialog.hidden = false;
+    dialogOpen(docTypeDialog);
   });
 
   docWord.addEventListener('click', function () {
-    docTypeDialog.hidden = true;
+    dialogClose(docTypeDialog);
     showNameDialog('docx');
   });
 
   docPdf.addEventListener('click', function () {
-    docTypeDialog.hidden = true;
+    dialogClose(docTypeDialog);
     showNameDialog('pdf');
   });
 
   docText.addEventListener('click', function () {
-    docTypeDialog.hidden = true;
+    dialogClose(docTypeDialog);
     showNameDialog('txt');
   });
 
@@ -572,7 +672,7 @@
       nameError.hidden = false;
       return;
     }
-    nameDialog.hidden = true;
+    dialogClose(nameDialog);
     startDownload(pendingType, v);
   });
 
@@ -619,19 +719,19 @@
   });
 
   succClose.addEventListener('click', function () {
-    successDialog.hidden = true;
+    dialogClose(successDialog);
   });
 
   docTypeDialog.addEventListener('click', function (e) {
-    if (e.target === docTypeDialog) docTypeDialog.hidden = true;
+    if (e.target === docTypeDialog) dialogClose(docTypeDialog);
   });
 
   nameDialog.addEventListener('click', function (e) {
-    if (e.target === nameDialog) nameDialog.hidden = true;
+    if (e.target === nameDialog) dialogClose(nameDialog);
   });
 
   successDialog.addEventListener('click', function (e) {
-    if (e.target === successDialog) successDialog.hidden = true;
+    if (e.target === successDialog) dialogClose(successDialog);
   });
 
   if (!(navigator.share && navigator.canShare)) {
@@ -645,6 +745,14 @@
       workerKey = null;
     }
   });
+
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function (err) {
+        console.warn('Service worker registration failed:', err);
+      });
+    });
+  }
 
   applyLang();
 

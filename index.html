@@ -6,9 +6,17 @@
   <title>TextRec</title>
   <meta name="description" content="TextRec — scan text in a photo and turn it into editable text. On-device OCR, nothing is uploaded." />
   <meta name="color-scheme" content="light dark" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230087F5'/%3E%3Cpath d='M12 9h8.5L24 12.5V23a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2z' fill='%23fff'/%3E%3Cpath d='M15 15.5h7M15 19.5h7' stroke='%230087F5' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+  <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png" />
+  <link rel="manifest" href="manifest.webmanifest?v=4" />
+  <meta name="theme-color" content="#0087F5" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#383e42" media="(prefers-color-scheme: dark)" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="TextRec" />
   <link rel="stylesheet" href="vendor/cropperjs/cropper.min.css" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=10" />
 </head>
 <body>
   <div id="app">
@@ -28,7 +36,7 @@
         <div class="paper">
           <p id="animTitle" data-i18n="animTitle">Snap,Scan,Save..</p>
           <p id="animSubtitle" data-i18n="animSubtitle">Perform text scanning in an easy way.</p>
-          <p id="animFooter" data-i18n="animFooter">To make life easier From B.S.Y</p>
+          <p id="animFooter" data-i18n="animFooter">Hayatı Kolaylaştıran Ürünler</p>
           <div id="scanLine"></div>
         </div>
       </div>
@@ -183,7 +191,7 @@ Please try another photo.</p>
   <script src="vendor/tesseract/tesseract.min.js"></script>
   <script src="vendor/docx.umd.js"></script>
   <script src="vendor/jspdf.umd.min.js"></script>
-  <script src="strings.js"></script>
-  <script src="app.js"></script>
+  <script src="strings.js?v=5"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>
