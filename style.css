@@ -276,7 +276,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px
 #fabs {
   position: absolute;
   right: 13px;
-  bottom: 13px;
+  bottom: calc(13px + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -521,10 +521,10 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px
 
 /* Crop screen */
 
-.crop-screen { background: rgba(0, 0, 0, 0.54); align-items: stretch; justify-content: flex-start; flex-direction: column; padding: 0; z-index: 30; }
+.crop-screen { background: rgba(0, 0, 0, 0.54); align-items: stretch; justify-content: flex-start; flex-direction: column; padding: 0; padding-bottom: env(safe-area-inset-bottom, 0px); z-index: 30; }
 
 .crop-bar {
-  height: 56px;
+  height: calc(56px + env(safe-area-inset-top, 0px));
   flex: 0 0 auto;
   display: flex;
   align-items: center;
@@ -532,6 +532,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px
   background: var(--appbar);
   color: #fff;
   padding: 0 6px;
+  padding-top: env(safe-area-inset-top, 0px);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   z-index: 2;
 }
@@ -578,7 +579,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px
 #toasts {
   position: fixed;
   left: 50%;
-  bottom: 20px;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
