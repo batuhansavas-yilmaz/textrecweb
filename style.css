@@ -519,6 +519,8 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px
   animation: skFadingCircle 1.2s linear infinite both;
 }
 
+.sk-fading-circle.reset .sk-circle::before { animation: none !important; }
+
 .sk-fading-circle .sk-circle:nth-child(1) { transform: rotate(0deg); }
 .sk-fading-circle .sk-circle:nth-child(2) { transform: rotate(30deg); }
 .sk-fading-circle .sk-circle:nth-child(3) { transform: rotate(60deg); }
