@@ -43,12 +43,12 @@
   }
 
 
-  var OCR_DET_NAME = 'PP-OCRv6_medium_det';
-  var OCR_DET_FILE = 'PP-OCRv6_medium_det_onnx_infer.tar';
-  var OCR_REC_NAME = 'PP-OCRv6_medium_rec';
-  var OCR_REC_FILE = 'PP-OCRv6_medium_rec_onnx_infer.tar';
+  var OCR_DET_NAME = 'PP-OCRv6_tiny_det';
+  var OCR_DET_FILE = 'PP-OCRv6_tiny_det_onnx_infer.tar';
+  var OCR_REC_NAME = 'PP-OCRv6_small_rec';
+  var OCR_REC_FILE = 'PP-OCRv6_small_rec_onnx_infer.tar';
   var OCR_ORI_FILE = 'PP-LCNet_x1_0_doc_ori.onnx';
-  var OCR_WORKER_URL = 'vendor/paddleocr/textrec-ocr-worker.js?v=3';
+  var OCR_WORKER_URL = 'vendor/paddleocr/textrec-ocr-worker.js?v=4';
 
   function detectLang() {
     var l = (navigator.language || 'en').toLowerCase();
@@ -450,9 +450,7 @@
             detName: OCR_DET_NAME,
             detFile: OCR_DET_FILE,
             recName: OCR_REC_NAME,
-            recFile: OCR_REC_FILE,
-            oriFile: OCR_ORI_FILE,
-            backend: USE_WASM ? 'wasm' : 'auto'
+            recFile: OCR_REC_FILE
           },
           blob: blob
         });
