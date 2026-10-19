@@ -15,7 +15,6 @@
   --succ-green: #0b633e;
   --barrier: rgba(0, 0, 0, 0.54);
   --guide: rgba(0, 0, 0, 0.28);
-  --spinner: #8a8a8f;
   --txt: #000;
   --scaffold: #fff;
   --appbar: var(--blue);
@@ -478,56 +477,100 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px
 
 #nameInput:focus { outline: none; }
 
-/* Loading dialog */
+/* Loading dialog (Flutter SpinKitFadingCircle replica) */
 
 .loading-card {
+  width: 100px;
+  height: 100px;
+  border-radius: 15px;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 18px;
-  color: var(--spinner);
+  background: rgba(0, 0, 0, 0.38);
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.14);
 }
 
-.loading-hint {
-  max-width: 260px;
-  margin: 0;
-  text-align: center;
-  font-size: 13px;
-  line-height: 1.45;
-  color: rgba(255, 255, 255, 0.92);
-}
-
-.spinner {
+.sk-fading-circle {
   position: relative;
-  width: 52px;
-  height: 52px;
-  animation: iosSpin 0.9s steps(8) infinite;
+  width: 60px;
+  height: 60px;
 }
 
-.spinner span {
+.sk-fading-circle .sk-circle {
   position: absolute;
-  left: calc(50% - 3px);
-  top: 0;
-  width: 6px;
-  height: 15px;
-  border-radius: 3px;
-  background: currentColor;
-  transform-origin: 3px 26px;
-  opacity: 0.16;
+  left: 30px;
+  top: 30px;
+  width: 30px;
+  height: 30px;
+  transform-origin: 0 0;
 }
 
-.spinner span:nth-child(1) { transform: rotate(0deg);   opacity: 1; }
-.spinner span:nth-child(2) { transform: rotate(45deg);  opacity: 0.88; }
-.spinner span:nth-child(3) { transform: rotate(90deg);  opacity: 0.76; }
-.spinner span:nth-child(4) { transform: rotate(135deg); opacity: 0.64; }
-.spinner span:nth-child(5) { transform: rotate(180deg); opacity: 0.52; }
-.spinner span:nth-child(6) { transform: rotate(225deg); opacity: 0.4; }
-.spinner span:nth-child(7) { transform: rotate(270deg); opacity: 0.28; }
-.spinner span:nth-child(8) { transform: rotate(315deg); opacity: 0.16; }
+.sk-fading-circle .sk-circle::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: skFadingCircle 1.2s linear infinite both;
+}
 
-@keyframes iosSpin {
-  to { transform: rotate(360deg); }
+.sk-fading-circle .sk-circle:nth-child(1) { transform: rotate(0deg); }
+.sk-fading-circle .sk-circle:nth-child(2) { transform: rotate(30deg); }
+.sk-fading-circle .sk-circle:nth-child(3) { transform: rotate(60deg); }
+.sk-fading-circle .sk-circle:nth-child(4) { transform: rotate(90deg); }
+.sk-fading-circle .sk-circle:nth-child(5) { transform: rotate(120deg); }
+.sk-fading-circle .sk-circle:nth-child(6) { transform: rotate(150deg); }
+.sk-fading-circle .sk-circle:nth-child(7) { transform: rotate(180deg); }
+.sk-fading-circle .sk-circle:nth-child(8) { transform: rotate(210deg); }
+.sk-fading-circle .sk-circle:nth-child(9) { transform: rotate(240deg); }
+.sk-fading-circle .sk-circle:nth-child(10) { transform: rotate(270deg); }
+.sk-fading-circle .sk-circle:nth-child(11) { transform: rotate(300deg); }
+.sk-fading-circle .sk-circle:nth-child(12) { transform: rotate(330deg); }
+
+.sk-fading-circle .sk-circle:nth-child(1)::before { animation-delay: -1.2s; }
+.sk-fading-circle .sk-circle:nth-child(2)::before { animation-delay: -1.1s; }
+.sk-fading-circle .sk-circle:nth-child(3)::before { animation-delay: -1s; }
+.sk-fading-circle .sk-circle:nth-child(4)::before { animation-delay: -0.9s; }
+.sk-fading-circle .sk-circle:nth-child(5)::before { animation-delay: -0.8s; }
+.sk-fading-circle .sk-circle:nth-child(6)::before { animation-delay: -0.7s; }
+.sk-fading-circle .sk-circle:nth-child(7)::before { animation-delay: -0.6s; }
+.sk-fading-circle .sk-circle:nth-child(8)::before { animation-delay: -0.5s; }
+.sk-fading-circle .sk-circle:nth-child(9)::before { animation-delay: -0.4s; }
+.sk-fading-circle .sk-circle:nth-child(10)::before { animation-delay: -0.3s; }
+.sk-fading-circle .sk-circle:nth-child(11)::before { animation-delay: -0.2s; }
+.sk-fading-circle .sk-circle:nth-child(12)::before { animation-delay: -0.1s; }
+
+@keyframes skFadingCircle {
+  0% { opacity: 0.5; }
+  4.17% { opacity: 0.6294; }
+  8.33% { opacity: 0.75; }
+  12.5% { opacity: 0.8536; }
+  16.67% { opacity: 0.933; }
+  20.83% { opacity: 0.983; }
+  25% { opacity: 1; }
+  29.17% { opacity: 0.983; }
+  33.33% { opacity: 0.933; }
+  37.5% { opacity: 0.8536; }
+  41.67% { opacity: 0.75; }
+  45.83% { opacity: 0.6294; }
+  50% { opacity: 0.5; }
+  54.17% { opacity: 0.3706; }
+  58.33% { opacity: 0.25; }
+  62.5% { opacity: 0.1464; }
+  66.67% { opacity: 0.067; }
+  70.83% { opacity: 0.017; }
+  75% { opacity: 0; }
+  79.17% { opacity: 0.017; }
+  83.33% { opacity: 0.067; }
+  87.5% { opacity: 0.1464; }
+  91.67% { opacity: 0.25; }
+  95.83% { opacity: 0.3706; }
+  100% { opacity: 0.5; }
 }
 
 /* Crop screen */
@@ -639,7 +682,11 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px
     --btn: var(--dark-appbar);
     --dialog-bg: var(--dark-dialog);
     --guide: rgba(255, 255, 255, 0.34);
-    --spinner: rgba(235, 235, 245, 0.78);
+  }
+
+  .loading-card {
+    background: rgba(255, 255, 255, 0.9);
+    color: #000;
   }
 
   #resultText { border-bottom-color: #fff; }

@@ -6,7 +6,7 @@ Fotoğraftaki yazıyı metne çeviren, **tamamen tarayıcıda çalışan** küç
 
 - OCR (yazı tanıma) [PaddleOCR.js](https://github.com/PaddlePaddle/PaddleOCR) ile **senin cihazında** yapılır. Fotoğraf hiçbir sunucuya yüklenmez.
 - Metin düzenleme, `.txt` / `.docx` / `.pdf` üretimi de tarayıcıda gerçekleşir.
-- Uygulama **hiçbir veri kaydetmez**: çerez yok, localStorage yok, içerik önbelleği yok. Sekmeyi kapatınca fotoğraf ve metin tamamen silinir. Kurulabilirlik için yalnızca bir service worker kaydedilir; bu da fotoğraf veya metin saklamaz.
+- Uygulama **fotoğrafını veya metnini saklamaz**: çerez yok, localStorage yok; tanıma sonrası fotoğraf ve metin hiçbir yere kaydedilmez. Service worker yalnızca tanıma motoru/model dosyalarını (`vendor/paddleocr/`) önbelleğe alır; böylece sonraki taramalar hızlıdır ve dosyalar yeniden indirilmez.
 - Sunucu tarafı (backend) yoktur; statik dosyalardan oluşur. Bu yüzden GitHub Pages gibi ücretsiz bir yere konabilir.
 
 ## Özellikler
@@ -14,7 +14,7 @@ Fotoğraftaki yazıyı metne çeviren, **tamamen tarayıcıda çalışan** küç
 - Kamera ile çekme, galeriden/bilgisayardan seçme, sürükle-bırak, panodan yapıştırma
 - İsteğe bağlı kırpma ve 90° döndürme adımı (Cropper.js)
 - Arayüz dili sistemine göre otomatik: Türkçe / İngilizce / Rusça (diğer dillerde İngilizce)
-- Yazı tanıma Türkçe + İngilizce + Latin alfabesi kullanan diller (PP-OCRv6 modeli); satırlar okuma sırasına göre paragraf akışına birleştirilir (kelime kelime dökmez)
+- Yazı tanıma Türkçe + İngilizce + Latin alfabesi kullanan diller (PP-OCRv6 modeli); satırlar okuma sırasına göre paragraf akışına birleştirilir (kelime kelime dökmez). Yatık, ters (180°) ve aynalanmış fotoğraflar otomatik algılanıp düzeltilir.
 - Sonucu düzenleme, araç menüsüyle yakınlaştırma ve tek dokunuşla kopyalama
 - `.txt`, Word (`.docx`) ve PDF (`.pdf`) olarak indirme; dosya adını sen belirlersin (PDF'te Türkçe karakterler gömülü Rubik fontu ile sorunsuzdur)
 - İndirme sonrası başarı penceresi: PDF/TXT tarayıcıda önizleme, dosya paylaşımı (destekleyen tarayıcılarda), kapat
@@ -27,7 +27,7 @@ Fotoğraftaki yazıyı metne çeviren, **tamamen tarayıcıda çalışan** küç
 - **Android (Chrome):** Menü → **Ana ekrana ekle**.
 - **iPhone/iPad (Safari):** Paylaş → **Ana Ekrana Ekle**.
 
-Kurulum için `manifest.webmanifest` ve `sw.js` eklidir. Service worker yalnızca kurulabilirliği sağlar; fotoğraf veya metin önbelleklemez.
+Kurulum için `manifest.webmanifest` ve `sw.js` eklidir. Service worker tanıma motoru/model dosyalarını önbellekler; fotoğraf veya metin önbelleklemez.
 
 ## Yerel çalıştırma
 
@@ -57,7 +57,7 @@ Telefonundan aynı adresi açıp ana ekrana kısayol olarak ekleyebilirsin.
 
 ## İlk açılışta ne iner?
 
-OCR motoru, çalışma zamanı (ONNX Runtime Web) ve tanıma modeli (toplam ~45 MB) bu deponun içinden tarayıcıya iner; yani internet hızına ek bir dış servis bağımlılığı yoktur. Dosyalar tarayıcı önbelleğine alınır, sonraki taramalar hızlıdır. Tanıma her zaman cihazda yapılır.
+OCR motoru, çalışma zamanı (ONNX Runtime Web) ve tanıma/yön modelleri (toplam ~175 MB) bu deponun içinden tarayıcıya iner; yani internet hızına ek bir dış servis bağımlılığı yoktur. Dosyalar tarayıcı önbelleğine alınır, sonraki taramalar hızlıdır. Tanıma her zaman cihazda yapılır.
 
 ## Kullanılan açık kaynak bileşenler
 

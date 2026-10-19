@@ -3,11 +3,12 @@
 
   var STR = window.TEXTREC_STR;
 
-  var OCR_DET_NAME = 'PP-OCRv6_tiny_det';
-  var OCR_DET_FILE = 'PP-OCRv6_tiny_det_onnx_infer.tar';
-  var OCR_REC_NAME = 'PP-OCRv6_small_rec';
-  var OCR_REC_FILE = 'PP-OCRv6_small_rec_onnx_infer.tar';
-  var OCR_WORKER_URL = 'vendor/paddleocr/textrec-ocr-worker.js?v=1';
+  var OCR_DET_NAME = 'PP-OCRv6_medium_det';
+  var OCR_DET_FILE = 'PP-OCRv6_medium_det_onnx_infer.tar';
+  var OCR_REC_NAME = 'PP-OCRv6_medium_rec';
+  var OCR_REC_FILE = 'PP-OCRv6_medium_rec_onnx_infer.tar';
+  var OCR_ORI_FILE = 'PP-LCNet_x1_0_doc_ori.onnx';
+  var OCR_WORKER_URL = 'vendor/paddleocr/textrec-ocr-worker.js?v=2';
 
   function detectLang() {
     var l = (navigator.language || 'en').toLowerCase();
@@ -44,7 +45,6 @@
   var cropConfirm = $('cropConfirm');
   var cropRotate = $('cropRotate');
   var loadingDialog = $('loadingDialog');
-  var loadingHint = $('loadingHint');
   var warnDialog = $('warnDialog');
   var warnOk = $('warnOk');
   var resultText = $('resultText');
@@ -74,7 +74,6 @@
   var imageUrl = null;
   var worker = null;
   var ocrSeq = 0;
-  var firstOcr = true;
   var busy = false;
   var cropper = null;
   var cropRotateDeg = 0;
@@ -407,7 +406,8 @@
             detName: OCR_DET_NAME,
             detFile: OCR_DET_FILE,
             recName: OCR_REC_NAME,
-            recFile: OCR_REC_FILE
+            recFile: OCR_REC_FILE,
+            oriFile: OCR_ORI_FILE
           },
           blob: blob
         });
@@ -504,7 +504,6 @@
       return;
     }
     busy = true;
-    if (firstOcr) loadingHint.hidden = false;
     dialogOpen(loadingDialog);
     ensureWorker()
       .then(function () {
@@ -517,8 +516,6 @@
         var text = itemsToText(out.items);
         text = text.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
         busy = false;
-        firstOcr = false;
-        loadingHint.hidden = true;
         dialogClose(loadingDialog);
         if (!text) {
           dialogOpen(warnDialog);
@@ -529,7 +526,6 @@
       .catch(function (err) {
         console.error(err);
         busy = false;
-        loadingHint.hidden = true;
         dialogClose(loadingDialog);
         toast(t('toastErrOcr'));
         goHome();
@@ -907,6 +903,10 @@
   window.addEventListener('pagehide', function () {
     killWorker();
   });
+
+  if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persist().catch(function () {});
+  }
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     window.addEventListener('load', function () {

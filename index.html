@@ -15,7 +15,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="TextRec" />
   <link rel="stylesheet" href="vendor/cropperjs/cropper.min.css" />
-  <link rel="stylesheet" href="style.css?v=13" />
+  <link rel="stylesheet" href="style.css?v=14" />
 </head>
 <body>
   <div id="app">
@@ -90,10 +90,9 @@
 
   <div class="overlay blur" id="loadingDialog" hidden>
     <div class="loading-card" role="status" data-i18n-aria="statusOcr">
-      <div class="spinner">
-        <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+      <div class="sk-fading-circle" aria-hidden="true">
+        <span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span>
       </div>
-      <p id="loadingHint" class="loading-hint" hidden data-i18n="loadingFirstRun"></p>
     </div>
   </div>
 
@@ -195,7 +194,7 @@ Please try another photo.</p>
   <script src="vendor/pdffont_base64.js"></script>
   <script src="vendor/docx.umd.js"></script>
   <script src="vendor/jspdf.umd.min.js"></script>
-  <script src="strings.js?v=7"></script>
-  <script src="app.js?v=9"></script>
+  <script src="strings.js?v=8"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>
