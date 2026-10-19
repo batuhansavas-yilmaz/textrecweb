@@ -2,13 +2,53 @@
   'use strict';
 
   var STR = window.TEXTREC_STR;
+  var QS = new URLSearchParams(location.search);
+  var DBG = QS.get('debug') === '1';
+  var FORCE_WASM = QS.get('nogpu') === '1';
+  var FORCE_GPU = QS.get('gpu') === '1';
+  var NO_SW = QS.get('nosw') === '1';
+  var IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var USE_WASM = FORCE_WASM || (IS_IOS && !FORCE_GPU);
+
+  var dbgEl = null;
+  function dbgText(text) {
+    if (!DBG) return;
+    if (!dbgEl) {
+      dbgEl = document.createElement('pre');
+      dbgEl.id = 'dbgPanel';
+      dbgEl.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;max-height:45vh;overflow:auto;z-index:99999;background:rgba(0,0,0,.85);color:#4f4;font:11px/1.35 monospace;padding:8px;border-radius:8px;white-space:pre-wrap;word-break:break-word;margin:0;';
+      document.body.appendChild(dbgEl);
+    }
+    dbgEl.textContent += text + '\n';
+    dbgEl.scrollTop = dbgEl.scrollHeight;
+  }
+  function dbgLog(text) {
+    if (!DBG) return;
+    var line = new Date().toISOString().slice(11, 19) + ' ' + text;
+    dbgText(line);
+    try {
+      var prev = sessionStorage.getItem('textrec-dbg') || '';
+      sessionStorage.setItem('textrec-dbg', (prev + '\n' + line).slice(-6000));
+    } catch (e) {}
+  }
+  if (DBG) {
+    try {
+      var prevLog = sessionStorage.getItem('textrec-dbg') || '';
+      if (prevLog.trim()) dbgText('--- onceki oturum ---\n' + prevLog.trim().split('\n').slice(-40).join('\n'));
+    } catch (e) {}
+    dbgLog('UA: ' + navigator.userAgent);
+    dbgLog('gpu: ' + (!!navigator.gpu) + ' | cores: ' + (navigator.hardwareConcurrency || '?') + ' | sw: ' + ('serviceWorker' in navigator) + ' | ios=' + IS_IOS + ' wasm=' + USE_WASM + ' nosw=' + NO_SW);
+    window.addEventListener('error', function (e) { dbgLog('page error: ' + (e.message || e.type)); });
+    window.addEventListener('unhandledrejection', function (e) { dbgLog('promise error: ' + ((e.reason && e.reason.message) || e.reason)); });
+  }
+
 
   var OCR_DET_NAME = 'PP-OCRv6_medium_det';
   var OCR_DET_FILE = 'PP-OCRv6_medium_det_onnx_infer.tar';
   var OCR_REC_NAME = 'PP-OCRv6_medium_rec';
   var OCR_REC_FILE = 'PP-OCRv6_medium_rec_onnx_infer.tar';
   var OCR_ORI_FILE = 'PP-LCNet_x1_0_doc_ori.onnx';
-  var OCR_WORKER_URL = 'vendor/paddleocr/textrec-ocr-worker.js?v=2';
+  var OCR_WORKER_URL = 'vendor/paddleocr/textrec-ocr-worker.js?v=3';
 
   function detectLang() {
     var l = (navigator.language || 'en').toLowerCase();
@@ -365,6 +405,10 @@
       w.pending = {};
       w.onmessage = function (e) {
         var d = e.data || {};
+        if (d.type === 'debug') {
+          dbgLog('worker: ' + (d.msg || ''));
+          return;
+        }
         var p = w.pending[d.id];
         if (!p) return;
         delete w.pending[d.id];
@@ -407,7 +451,8 @@
             detFile: OCR_DET_FILE,
             recName: OCR_REC_NAME,
             recFile: OCR_REC_FILE,
-            oriFile: OCR_ORI_FILE
+            oriFile: OCR_ORI_FILE,
+            backend: USE_WASM ? 'wasm' : 'auto'
           },
           blob: blob
         });
@@ -515,6 +560,7 @@
       .then(function (out) {
         var text = itemsToText(out.items);
         text = text.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+        dbgLog('result items=' + out.items.length + ' ms=' + out.ms + ' ori=' + JSON.stringify(out.ori));
         busy = false;
         dialogClose(loadingDialog);
         if (!text) {
@@ -525,6 +571,7 @@
       })
       .catch(function (err) {
         console.error(err);
+        dbgLog('ocr error: ' + ((err && err.message) || err));
         busy = false;
         dialogClose(loadingDialog);
         toast(t('toastErrOcr'));
@@ -908,7 +955,18 @@
     navigator.storage.persist().catch(function () {});
   }
 
-  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  if (NO_SW && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function (rs) {
+      rs.forEach(function (r) { r.unregister(); });
+    }).catch(function () {});
+    if (window.caches) {
+      caches.keys().then(function (ks) {
+        ks.forEach(function (k) { caches.delete(k); });
+      }).catch(function () {});
+    }
+  }
+
+  if (!NO_SW && 'serviceWorker' in navigator && location.protocol !== 'file:') {
     window.addEventListener('load', function () {
       navigator.serviceWorker.register('sw.js').catch(function (err) {
         console.warn('Service worker registration failed:', err);
