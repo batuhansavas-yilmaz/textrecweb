@@ -12,7 +12,7 @@ Fotoğraftaki yazıyı metne çeviren, **tamamen tarayıcıda çalışan** küç
 ## Özellikler
 
 - Kamera ile çekme, galeriden/bilgisayardan seçme, sürükle-bırak, panodan yapıştırma
-- İsteğe bağlı kırpma adımı (Cropper.js)
+- İsteğe bağlı kırpma ve 90° döndürme adımı (Cropper.js)
 - Arayüz dili sistemine göre otomatik: Türkçe / İngilizce / Rusça (diğer dillerde İngilizce)
 - Yazı tanıma Türkçe + İngilizce + Latin alfabesi kullanan diller (PP-OCRv6 modeli); satırlar okuma sırasına göre paragraf akışına birleştirilir (kelime kelime dökmez)
 - Sonucu düzenleme, araç menüsüyle yakınlaştırma ve tek dokunuşla kopyalama
@@ -69,7 +69,7 @@ OCR motoru, çalışma zamanı (ONNX Runtime Web) ve tanıma modeli (toplam ~45 
 | OpenCV.js | Apache-2.0 |
 | docx (Word üretimi) | MIT |
 | jsPDF | MIT |
-| Cropper.js (kırpma) | MIT |
+| Cropper.js (kırpma, döndürme) | MIT |
 | Rubik fontu | SIL OFL 1.1 |
 | Simge setleri (Font Awesome, Material Symbols) | CC BY 4.0 / Apache-2.0 |
 

@@ -15,7 +15,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="TextRec" />
   <link rel="stylesheet" href="vendor/cropperjs/cropper.min.css" />
-  <link rel="stylesheet" href="style.css?v=12" />
+  <link rel="stylesheet" href="style.css?v=13" />
 </head>
 <body>
   <div id="app">
@@ -114,9 +114,14 @@ Please try another photo.</p>
         <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       </button>
       <span class="crop-title" data-i18n="cropScreenTitle">Crop Image</span>
-      <button id="cropConfirm" type="button" data-i18n-aria="ariaCropConfirm">
-        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
-      </button>
+      <div class="crop-bar-actions">
+        <button id="cropRotate" type="button" data-i18n-aria="ariaRotate">
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.55 5.55 11 1v3.07C7.06 4.56 4 7.92 4 12s3.05 7.44 7 7.93v-2.02c-2.84-.48-5-2.94-5-5.91s2.16-5.43 5-5.91V10l4.55-4.45zM19.93 11c-.17-1.39-.72-2.73-1.62-3.89l-1.42 1.42c.54.75.88 1.6 1.02 2.47h2.02zM13 17.91v2.02c1.39-.17 2.74-.71 3.9-1.61l-1.44-1.44c-.75.54-1.59.89-2.46 1.03zm3.89-2.42 1.42 1.41c.9-1.16 1.45-2.5 1.62-3.89h-2.02c-.14.87-.48 1.72-1.02 2.48z"/></svg>
+        </button>
+        <button id="cropConfirm" type="button" data-i18n-aria="ariaCropConfirm">
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+        </button>
+      </div>
     </header>
     <div class="crop-stage">
       <img id="cropImage" alt="" />
@@ -190,7 +195,7 @@ Please try another photo.</p>
   <script src="vendor/pdffont_base64.js"></script>
   <script src="vendor/docx.umd.js"></script>
   <script src="vendor/jspdf.umd.min.js"></script>
-  <script src="strings.js?v=6"></script>
-  <script src="app.js?v=7"></script>
+  <script src="strings.js?v=7"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>

@@ -42,6 +42,7 @@
   var cropImage = $('cropImage');
   var cropCancel = $('cropCancel');
   var cropConfirm = $('cropConfirm');
+  var cropRotate = $('cropRotate');
   var loadingDialog = $('loadingDialog');
   var loadingHint = $('loadingHint');
   var warnDialog = $('warnDialog');
@@ -76,6 +77,10 @@
   var firstOcr = true;
   var busy = false;
   var cropper = null;
+  var cropRotateDeg = 0;
+  var cropRotateSeq = 0;
+  var cropBaseImage = null;
+  var cropBakedUrl = null;
   var resultSize = 17;
   var pendingType = null;
   var lastFile = null;
@@ -236,19 +241,26 @@
     clearImage();
   }
 
+  var CROP_OPTS = {
+    viewMode: 1,
+    autoCropArea: 0.92,
+    background: false,
+    responsive: true,
+    dragMode: 'move',
+    guides: false
+  };
+
   function openCropScreen() {
+    cropRotateDeg = 0;
+    cropRotateSeq++;
+    if (cropBakedUrl) { URL.revokeObjectURL(cropBakedUrl); cropBakedUrl = null; }
+    cropBaseImage = new Image();
+    cropBaseImage.src = imageUrl;
     cropImage.src = imageUrl;
     cropScreen.hidden = false;
     pageSlide(cropScreen, 'translateY(100%)', 'translateY(0)');
     if (cropper) { cropper.destroy(); cropper = null; }
-    cropper = new Cropper(cropImage, {
-      viewMode: 1,
-      autoCropArea: 0.92,
-      background: false,
-      responsive: true,
-      dragMode: 'move',
-      guides: false
-    });
+    cropper = new Cropper(cropImage, CROP_OPTS);
   }
 
   function finishCrop() {
@@ -557,6 +569,48 @@
   });
 
   cropConfirm.addEventListener('click', finishCrop);
+
+  function bakeRotatedCanvas(src) {
+    var iw = src.naturalWidth || src.width;
+    var ih = src.naturalHeight || src.height;
+    if (!iw || !ih) return null;
+    var deg = cropRotateDeg;
+    var swap = deg % 180 === 90;
+    var s = Math.min(1, 2400 / Math.max(iw, ih));
+    var dw = Math.max(1, Math.round(iw * s));
+    var dh = Math.max(1, Math.round(ih * s));
+    var c = document.createElement('canvas');
+    c.width = swap ? dh : dw;
+    c.height = swap ? dw : dh;
+    var ctx = c.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, c.width, c.height);
+    if (deg === 90) {
+      ctx.setTransform(0, 1, -1, 0, c.width, 0);
+    } else if (deg === 180) {
+      ctx.setTransform(-1, 0, 0, -1, c.width, c.height);
+    } else if (deg === 270) {
+      ctx.setTransform(0, -1, 1, 0, 0, c.height);
+    }
+    ctx.drawImage(src, 0, 0, dw, dh);
+    return c;
+  }
+
+  cropRotate.addEventListener('click', function () {
+    if (!cropper || !cropBaseImage) return;
+    cropRotateDeg = (cropRotateDeg + 90) % 360;
+    var seq = ++cropRotateSeq;
+    var baked = bakeRotatedCanvas(cropBaseImage);
+    if (!baked) return;
+    canvasToBlob(baked).then(function (blob) {
+      if (!blob || seq !== cropRotateSeq) return;
+      if (cropBakedUrl) URL.revokeObjectURL(cropBakedUrl);
+      cropBakedUrl = URL.createObjectURL(blob);
+      if (cropper) { cropper.destroy(); cropper = null; }
+      cropImage.src = cropBakedUrl;
+      cropper = new Cropper(cropImage, CROP_OPTS);
+    });
+  });
 
   warnOk.addEventListener('click', function () {
     dialogClose(warnDialog);
