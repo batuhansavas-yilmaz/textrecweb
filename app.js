@@ -2,7 +2,12 @@
   'use strict';
 
   var STR = window.TEXTREC_STR;
-  var OCR_LANGS = ['tur', 'eng'];
+
+  var OCR_DET_NAME = 'PP-OCRv6_tiny_det';
+  var OCR_DET_FILE = 'PP-OCRv6_tiny_det_onnx_infer.tar';
+  var OCR_REC_NAME = 'PP-OCRv6_small_rec';
+  var OCR_REC_FILE = 'PP-OCRv6_small_rec_onnx_infer.tar';
+  var OCR_WORKER_URL = 'vendor/paddleocr/textrec-ocr-worker.js?v=1';
 
   function detectLang() {
     var l = (navigator.language || 'en').toLowerCase();
@@ -38,6 +43,7 @@
   var cropCancel = $('cropCancel');
   var cropConfirm = $('cropConfirm');
   var loadingDialog = $('loadingDialog');
+  var loadingHint = $('loadingHint');
   var warnDialog = $('warnDialog');
   var warnOk = $('warnOk');
   var resultText = $('resultText');
@@ -66,7 +72,8 @@
   var imageFile = null;
   var imageUrl = null;
   var worker = null;
-  var workerKey = null;
+  var ocrSeq = 0;
+  var firstOcr = true;
   var busy = false;
   var cropper = null;
   var resultSize = 17;
@@ -326,54 +333,156 @@
     });
   }
 
-  function ensureWorker(langs) {
-    var key = langs.join('+');
-    if (worker && workerKey === key) return Promise.resolve(worker);
-    var kill = Promise.resolve();
+  function killWorker() {
     if (worker) {
-      kill = worker.terminate().catch(function () {});
+      try { worker.terminate(); } catch (e) {}
+      worker.pending = {};
       worker = null;
-      workerKey = null;
     }
-    return kill.then(function () {
-      return Tesseract.createWorker(langs, 1, {
-        workerPath: 'vendor/tesseract/worker.min.js',
-        corePath: 'vendor/tesseract/core',
-        langPath: 'vendor/tessdata',
-        cacheMethod: 'none'
-      });
-    }).then(function (w) {
+  }
+
+  function ensureWorker() {
+    if (worker) return Promise.resolve(worker);
+    return new Promise(function (resolve, reject) {
+      var w;
+      try {
+        w = new Worker(OCR_WORKER_URL, { type: 'module' });
+      } catch (err) {
+        reject(err);
+        return;
+      }
+      w.pending = {};
+      w.onmessage = function (e) {
+        var d = e.data || {};
+        var p = w.pending[d.id];
+        if (!p) return;
+        delete w.pending[d.id];
+        if (d.type === 'result') p.resolve(d);
+        else p.reject(new Error(d.message || 'OCR error'));
+      };
+      w.onerror = function (ev) {
+        var err = new Error((ev && ev.message) || 'OCR worker error');
+        var pend = w.pending;
+        w.pending = {};
+        Object.keys(pend).forEach(function (k) { pend[k].reject(err); });
+        if (worker === w) {
+          try { w.terminate(); } catch (e2) {}
+          worker = null;
+        }
+      };
       worker = w;
-      workerKey = key;
-      return w;
-    }).catch(function (err) {
-      worker = null;
-      workerKey = null;
-      throw err;
+      resolve(w);
     });
   }
 
-  function ocrParagraphs(data) {
-    var blocks = data && data.blocks;
-    if (!blocks || !blocks.length) return '';
-    var paras = [];
-    blocks.forEach(function (block) {
-      (block.paragraphs || []).forEach(function (para) {
-        var merged = '';
-        (para.lines || []).forEach(function (line) {
-          var t = (line.text || '').replace(/\s+/g, ' ').trim();
-          if (!t) return;
-          if (!merged) { merged = t; return; }
-          if (/[A-Za-zÇĞİÖŞÜçğıöşü]-$/.test(merged) && /^[a-zçğıöşü]/.test(t)) {
-            merged = merged.slice(0, -1) + t;
-          } else {
-            merged += ' ' + t;
-          }
+  function ocrBlob(blob) {
+    return ensureWorker().then(function (w) {
+      return new Promise(function (resolve, reject) {
+        var id = ++ocrSeq;
+        var timer = setTimeout(function () {
+          delete w.pending[id];
+          killWorker();
+          reject(new Error('OCR timeout'));
+        }, 300000);
+        w.pending[id] = {
+          resolve: function (v) { clearTimeout(timer); resolve(v); },
+          reject: function (e) { clearTimeout(timer); reject(e); }
+        };
+        w.postMessage({
+          type: 'ocr',
+          id: id,
+          cfg: {
+            detName: OCR_DET_NAME,
+            detFile: OCR_DET_FILE,
+            recName: OCR_REC_NAME,
+            recFile: OCR_REC_FILE
+          },
+          blob: blob
         });
-        if (merged) paras.push(merged);
       });
     });
-    return paras.join('\n\n');
+  }
+
+  function buildPara(lines) {
+    var merged = '';
+    lines.forEach(function (txt) {
+      if (!merged) { merged = txt; return; }
+      if (/[A-Za-zÇĞİÖŞÜçğıöşü]-$/.test(merged) && /^[a-zçğıöşü]/.test(txt)) {
+        merged = merged.slice(0, -1) + txt;
+      } else {
+        merged += ' ' + txt;
+      }
+    });
+    return merged;
+  }
+
+  function itemsToText(items) {
+    var boxes = [];
+    (items || []).forEach(function (it) {
+      var txt = (it.text || '').replace(/\s+/g, ' ').trim();
+      if (!txt) return;
+      var poly = it.poly || [];
+      if (!poly.length) return;
+      var minX = Infinity;
+      var minY = Infinity;
+      var maxY = -Infinity;
+      poly.forEach(function (p) {
+        if (p[0] < minX) minX = p[0];
+        if (p[1] < minY) minY = p[1];
+        if (p[1] > maxY) maxY = p[1];
+      });
+      boxes.push({
+        text: txt,
+        cy: (minY + maxY) / 2,
+        x: minX,
+        y: minY,
+        h: Math.max(1, maxY - minY)
+      });
+    });
+    boxes.sort(function (a, b) { return a.cy - b.cy; });
+    var rows = [];
+    boxes.forEach(function (b) {
+      var row = null;
+      for (var i = rows.length - 1; i >= 0; i--) {
+        var r = rows[i];
+        var tol = Math.max(r.h, b.h) * 0.6;
+        if (Math.abs(b.cy - r.cy) < tol) { row = r; break; }
+        if (b.cy - r.cy > tol) break;
+      }
+      if (!row) {
+        row = { cy: b.cy, h: b.h, y: b.y, items: [] };
+        rows.push(row);
+      }
+      row.items.push(b);
+      row.cy = row.cy + (b.cy - row.cy) / row.items.length;
+      row.h = Math.max(row.h, b.h);
+      if (b.y < row.y) row.y = b.y;
+    });
+    rows.sort(function (a, b) { return a.cy - b.cy; });
+    rows.forEach(function (r) {
+      r.items.sort(function (a, b) { return a.x - b.x; });
+    });
+    var paras = [];
+    var cur = null;
+    rows.forEach(function (r) {
+      var lineText = r.items.map(function (b) { return b.text; }).join(' ');
+      if (!cur) {
+        cur = { texts: [lineText], lastY: r.y, lastH: r.h };
+        return;
+      }
+      var vGap = r.y - (cur.lastY + cur.lastH);
+      var near = vGap < Math.max(cur.lastH, r.h) * 0.7;
+      if (near) {
+        cur.texts.push(lineText);
+        cur.lastY = r.y;
+        cur.lastH = r.h;
+      } else {
+        paras.push(buildPara(cur.texts));
+        cur = { texts: [lineText], lastY: r.y, lastH: r.h };
+      }
+    });
+    if (cur) paras.push(buildPara(cur.texts));
+    return paras.filter(Boolean).join('\n\n');
   }
 
   function runOcrFlow() {
@@ -383,19 +492,21 @@
       return;
     }
     busy = true;
+    if (firstOcr) loadingHint.hidden = false;
     dialogOpen(loadingDialog);
-    ensureWorker(OCR_LANGS)
-      .then(function (w) {
-        return prepareImage(imageFile).then(function (blob) {
-          return w.recognize(blob, {}, { text: true, blocks: true });
-        });
+    ensureWorker()
+      .then(function () {
+        return prepareImage(imageFile);
       })
-      .then(function (res) {
-        var data = res && res.data ? res.data : {};
-        var text = ocrParagraphs(data);
-        if (!text && data.text) text = data.text;
+      .then(function (blob) {
+        return ocrBlob(blob);
+      })
+      .then(function (out) {
+        var text = itemsToText(out.items);
         text = text.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
         busy = false;
+        firstOcr = false;
+        loadingHint.hidden = true;
         dialogClose(loadingDialog);
         if (!text) {
           dialogOpen(warnDialog);
@@ -406,6 +517,7 @@
       .catch(function (err) {
         console.error(err);
         busy = false;
+        loadingHint.hidden = true;
         dialogClose(loadingDialog);
         toast(t('toastErrOcr'));
         goHome();
@@ -739,11 +851,7 @@
   }
 
   window.addEventListener('pagehide', function () {
-    if (worker) {
-      worker.terminate();
-      worker = null;
-      workerKey = null;
-    }
+    killWorker();
   });
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {

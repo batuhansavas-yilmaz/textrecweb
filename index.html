@@ -15,7 +15,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="TextRec" />
   <link rel="stylesheet" href="vendor/cropperjs/cropper.min.css" />
-  <link rel="stylesheet" href="style.css?v=11" />
+  <link rel="stylesheet" href="style.css?v=12" />
 </head>
 <body>
   <div id="app">
@@ -93,6 +93,7 @@
       <div class="spinner">
         <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
       </div>
+      <p id="loadingHint" class="loading-hint" hidden data-i18n="loadingFirstRun"></p>
     </div>
   </div>
 
@@ -187,10 +188,9 @@ Please try another photo.</p>
 
   <script src="vendor/cropperjs/cropper.min.js"></script>
   <script src="vendor/pdffont_base64.js"></script>
-  <script src="vendor/tesseract/tesseract.min.js"></script>
   <script src="vendor/docx.umd.js"></script>
   <script src="vendor/jspdf.umd.min.js"></script>
-  <script src="strings.js?v=5"></script>
-  <script src="app.js?v=6"></script>
+  <script src="strings.js?v=6"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>
