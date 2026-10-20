@@ -238,7 +238,7 @@
   }
 
   document.addEventListener('pointerdown', function (e) {
-    var btn = e.target && e.target.closest ? e.target.closest('button') : null;
+    var btn = e.target && e.target.closest ? e.target.closest('button, a.github-btn') : null;
     if (!btn || btn.disabled || motionReduced()) return;
     var rect = btn.getBoundingClientRect();
     var size = Math.max(rect.width, rect.height) * 1.6;
