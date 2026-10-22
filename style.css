@@ -818,3 +818,235 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
     -webkit-app-region: no-drag;
   }
 }
+
+:root {
+  color-scheme: light;
+  --blue: #5a4ad8;
+  --primary: #5a4ad8;
+  --primary-2: #6a59e8;
+  --primary-soft: #ece9fc;
+  --ice: #2f79a4;
+  --scaffold: #eaf2fa;
+  --surface: #ffffff;
+  --surface-2: #f3f8fd;
+  --surface-3: #e7f1fa;
+  --border: #d7e5f1;
+  --border-2: #c3d8e8;
+  --txt: #234d6c;
+  --text-2: #4c7493;
+  --text-3: #4f728d;
+  --appbar: #ffffff;
+  --appbar-fg: #234d6c;
+  --btn: #5a4ad8;
+  --btn-grad: linear-gradient(180deg, #6a59e8, #5a4ad8);
+  --dialog-bg: #ffffff;
+  --barrier: rgba(20, 40, 58, .38);
+  --guide: rgba(18, 34, 47, .12);
+  --red: #c22f43;
+  --warn-red: #c22f43;
+  --succ-green: #0c7a4d;
+  --gold: #8a5a00;
+  --hover-soft: rgba(18, 34, 47, .06);
+  --toast-bg: #ffffff;
+  --toast-fg: #234d6c;
+  --crop-scrim: rgba(16, 35, 52, .55);
+  --shadow-card: 0 10px 26px rgba(30, 64, 92, .10), 0 2px 6px rgba(30, 64, 92, .05);
+  --shadow-soft: 0 16px 34px rgba(30, 64, 92, .12);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --blue: #8b80ff;
+    --primary: #6f63f6;
+    --primary-2: #8b80ff;
+    --primary-soft: rgba(111, 99, 246, .16);
+    --ice: #7fe4d8;
+    --scaffold: #0c1120;
+    --surface: #161d31;
+    --surface-2: #1d253d;
+    --surface-3: #253050;
+    --border: #263051;
+    --border-2: #323d63;
+    --txt: #eef1f8;
+    --text-2: #a2abc8;
+    --text-3: #6a7495;
+    --appbar: #161d31;
+    --appbar-fg: #eef1f8;
+    --btn: #6a59e8;
+    --btn-grad: linear-gradient(180deg, #6a59e8, #5443d6);
+    --dialog-bg: #161d31;
+    --barrier: rgba(5, 8, 18, .72);
+    --guide: rgba(255, 255, 255, .14);
+    --red: #ff5b6b;
+    --warn-red: #ff8a96;
+    --succ-green: #2fd27f;
+    --gold: #ffc53d;
+    --hover-soft: rgba(255, 255, 255, .08);
+    --toast-bg: #1d253d;
+    --toast-fg: #eef1f8;
+    --crop-scrim: rgba(3, 6, 14, .82);
+    --shadow-card: 0 14px 34px rgba(2, 5, 18, .38), 0 2px 8px rgba(2, 5, 18, .22);
+    --shadow-soft: 0 18px 40px rgba(2, 5, 18, .45);
+  }
+}
+
+#app {
+  background-color: var(--scaffold);
+  background-image:
+    radial-gradient(900px 520px at 88% -8%, rgba(106, 89, 232, .14), transparent 62%),
+    radial-gradient(900px 520px at -10% 108%, rgba(84, 173, 224, .16), transparent 60%);
+}
+
+@media (prefers-color-scheme: dark) {
+  #app {
+    background-image:
+      radial-gradient(900px 520px at 88% -8%, rgba(111, 99, 246, .16), transparent 60%),
+      radial-gradient(900px 520px at -10% 108%, rgba(84, 173, 224, .10), transparent 60%);
+  }
+}
+
+#homeView,
+#resultView,
+#app {
+  background-color: var(--scaffold);
+}
+
+#homeView,
+#resultView {
+  background: transparent;
+}
+
+#appbar,
+.crop-bar {
+  background: var(--appbar);
+  color: var(--appbar-fg);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(18, 34, 47, .06);
+}
+
+#appbarTitle,
+.crop-title,
+#backBtn,
+.crop-bar button {
+  color: var(--appbar-fg);
+}
+
+#backBtn:hover,
+.crop-bar button:hover {
+  background: var(--hover-soft);
+}
+
+.github-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+
+.btn-elev,
+.mini-fab,
+.main-fab {
+  background: var(--btn-grad);
+  color: #fff;
+  box-shadow: var(--shadow-card);
+}
+
+.btn-elev {
+  border-radius: 14px;
+}
+
+#resultText,
+#nameInput {
+  border-color: var(--blue);
+  color: var(--txt);
+}
+
+#resultText {
+  border-bottom-color: var(--blue);
+}
+
+#nameInput {
+  border-bottom-color: var(--blue);
+}
+
+.dialog {
+  background: var(--dialog-bg);
+  color: var(--txt);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-soft);
+}
+
+.overlay {
+  background: var(--barrier);
+}
+
+.dlg-actions button {
+  color: var(--txt);
+}
+
+.dlg-actions button:hover {
+  background: var(--hover-soft);
+}
+
+.dlg-actions.icons button {
+  color: var(--succ-green);
+}
+
+.doc-option {
+  color: var(--blue);
+}
+
+.doc-option .ic {
+  color: var(--blue);
+}
+
+.doc-option + .doc-option {
+  border-top-color: var(--border);
+}
+
+.doc-option:hover {
+  background: var(--hover-soft);
+}
+
+.name-error {
+  color: var(--red);
+}
+
+.warn-text,
+#warnOk {
+  color: var(--warn-red);
+}
+
+.loading-card {
+  background: var(--dialog-bg);
+  color: var(--blue);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-soft);
+}
+
+.toast {
+  background: var(--toast-bg);
+  color: var(--toast-fg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+
+.crop-screen {
+  background: var(--crop-scrim);
+}
+
+#homeCaption {
+  color: var(--txt);
+}
+
+.paper {
+  box-shadow: var(--shadow-card);
+}
+
+@media (prefers-color-scheme: dark) {
+  .paper {
+    border-color: #1c1c1c;
+  }
+}
