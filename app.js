@@ -4,7 +4,11 @@
   var STR = window.TEXTREC_STR;
   var QS = new URLSearchParams(location.search);
   var DBG = QS.get('debug') === '1';
-  var SMALL = QS.get('small') === '1';
+  var ACCURATE = QS.get('accurate') === '1';
+  var IS_MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+    (navigator.maxTouchPoints > 1 && Math.min(screen.width, screen.height) < 900);
+  var SMALL = QS.get('small') === '1' || (!ACCURATE && QS.get('small') !== '0' && IS_MOBILE);
+  var MAX_DIM = SMALL ? 1600 : 2400;
   var NO_SW = QS.get('nosw') === '1';
 
   var dbgEl = null;
@@ -34,7 +38,7 @@
       if (prevLog.trim()) dbgText('--- onceki oturum ---\n' + prevLog.trim().split('\n').slice(-40).join('\n'));
     } catch (e) {}
     dbgLog('UA: ' + navigator.userAgent);
-    dbgLog('gpu: ' + (!!navigator.gpu) + ' | cores: ' + (navigator.hardwareConcurrency || '?') + ' | sw: ' + ('serviceWorker' in navigator) + ' | small=' + SMALL + ' nosw=' + NO_SW);
+    dbgLog('gpu: ' + (!!navigator.gpu) + ' | cores: ' + (navigator.hardwareConcurrency || '?') + ' | sw: ' + ('serviceWorker' in navigator) + ' | small=' + SMALL + ' maxDim=' + MAX_DIM + ' nosw=' + NO_SW);
     window.addEventListener('error', function (e) { dbgLog('page error: ' + (e.message || e.type)); });
     window.addEventListener('unhandledrejection', function (e) { dbgLog('promise error: ' + ((e.reason && e.reason.message) || e.reason)); });
   }
@@ -44,8 +48,20 @@
   var OCR_DET_FILE = SMALL ? 'PP-OCRv6_tiny_det_onnx_infer.tar' : 'PP-OCRv6_medium_det_onnx_infer.tar';
   var OCR_REC_NAME = SMALL ? 'PP-OCRv6_small_rec' : 'PP-OCRv6_medium_rec';
   var OCR_REC_FILE = SMALL ? 'PP-OCRv6_small_rec_onnx_infer.tar' : 'PP-OCRv6_medium_rec_onnx_infer.tar';
-  var OCR_ORI_FILE = 'PP-LCNet_x1_0_doc_ori.onnx';
-  var OCR_WORKER_URL = 'vendor/paddleocr/textrec-ocr-worker.js?v=5';
+  var OCR_ORI_FILE = SMALL ? null : 'PP-LCNet_x1_0_doc_ori.onnx';
+  var OCR_WORKER_URL = 'vendor/paddleocr/textrec-ocr-worker.js?v=6';
+  var OCR_BACKEND = 'auto';
+
+  function ocrCfg() {
+    return {
+      detName: OCR_DET_NAME,
+      detFile: OCR_DET_FILE,
+      recName: OCR_REC_NAME,
+      recFile: OCR_REC_FILE,
+      oriFile: OCR_ORI_FILE,
+      backend: OCR_BACKEND
+    };
+  }
 
   function detectLang() {
     var l = (navigator.language || 'en').toLowerCase();
@@ -110,6 +126,7 @@
   var imageFile = null;
   var imageUrl = null;
   var worker = null;
+  var warmupPromise = null;
   var ocrSeq = 0;
   var busy = false;
   var cropper = null;
@@ -311,8 +328,8 @@
   function finishCrop() {
     if (!cropper) return;
     var canvas = cropper.getCroppedCanvas({
-      maxWidth: 2400,
-      maxHeight: 2400,
+      maxWidth: MAX_DIM,
+      maxHeight: MAX_DIM,
       fillColor: '#fff',
       imageSmoothingQuality: 'high'
     });
@@ -349,7 +366,7 @@
   }
 
   function prepareImage(file) {
-    var MAX = 2400;
+    var MAX = MAX_DIM;
     if (window.createImageBitmap) {
       return createImageBitmap(file, { imageOrientation: 'from-image' })
         .then(function (bmp) {
@@ -437,7 +454,10 @@
   }
 
   function ocrBlob(blob) {
-    return ensureWorker().then(function (w) {
+    var ready = warmupPromise || Promise.resolve();
+    return ready.then(function () {
+      return ensureWorker();
+    }).then(function (w) {
       return new Promise(function (resolve, reject) {
         var id = ++ocrSeq;
         var timer = setTimeout(function () {
@@ -452,19 +472,51 @@
         w.postMessage({
           type: 'ocr',
           id: id,
-          cfg: {
-            detName: OCR_DET_NAME,
-            detFile: OCR_DET_FILE,
-            recName: OCR_REC_NAME,
-            recFile: OCR_REC_FILE,
-            oriFile: OCR_ORI_FILE,
-            backend: 'wasm'
-          },
+          cfg: ocrCfg(),
           blob: blob
         });
       });
     });
   }
+
+  function ocrWithFallback(blob) {
+    return ocrBlob(blob).catch(function (err) {
+      if (OCR_BACKEND !== 'auto') throw err;
+      dbgLog('auto backend failed, retrying wasm: ' + ((err && err.message) || err));
+      OCR_BACKEND = 'wasm';
+      warmupPromise = null;
+      killWorker();
+      return ocrBlob(blob);
+    });
+  }
+
+  function warmupOcr() {
+    if (warmupPromise || location.protocol === 'file:') return;
+    warmupPromise = ensureWorker().then(function (w) {
+      return new Promise(function (resolve) {
+        var finished = false;
+        function done() {
+          if (finished) return;
+          finished = true;
+          try { w.removeEventListener('message', onMsg); } catch (e) {}
+          resolve();
+        }
+        function onMsg(e) {
+          var d = e.data || {};
+          if (d.type === 'warmup-done' || d.type === 'warmup-error') done();
+        }
+        w.addEventListener('message', onMsg);
+        w.postMessage({ type: 'warmup', id: 0, cfg: ocrCfg() });
+        setTimeout(done, 30000);
+      });
+    }).catch(function () {
+      warmupPromise = null;
+    });
+  }
+
+  [cameraBtn, photosBtn].forEach(function (btn) {
+    btn.addEventListener('pointerdown', warmupOcr, { passive: true });
+  });
 
   function buildPara(lines) {
     var merged = '';
@@ -561,7 +613,7 @@
         return prepareImage(imageFile);
       })
       .then(function (blob) {
-        return ocrBlob(blob);
+        return ocrWithFallback(blob);
       })
       .then(function (out) {
         var text = itemsToText(out.items);
@@ -625,7 +677,7 @@
     if (!iw || !ih) return null;
     var deg = cropRotateDeg;
     var swap = deg % 180 === 90;
-    var s = Math.min(1, 2400 / Math.max(iw, ih));
+    var s = Math.min(1, MAX_DIM / Math.max(iw, ih));
     var dw = Math.max(1, Math.round(iw * s));
     var dh = Math.max(1, Math.round(ih * s));
     var c = document.createElement('canvas');

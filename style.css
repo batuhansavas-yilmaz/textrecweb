@@ -24,13 +24,12 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-html, body { height: 100%; }
+html, body { height: 100%; overflow: hidden; }
 
 body {
   font-family: 'Rubik', system-ui, -apple-system, 'Segoe UI', sans-serif;
   background: var(--scaffold);
   color: var(--txt);
-  overflow-x: hidden;
 }
 
 [hidden] { display: none !important; }
@@ -75,8 +74,9 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
   position: relative;
   --appbar-h: calc(56px + env(safe-area-inset-top, 0px));
   max-width: 420px;
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -256,8 +256,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
 .btn-elev:active { filter: brightness(0.95); }
 .btn-elev .ic { width: 22px; height: 22px; }
 
-#cameraBtn { width: 130px; height: 60px; }
-#photosBtn { width: 120px; height: 60px; }
+#cameraBtn, #photosBtn { width: 130px; height: 60px; }
 
 /* ---------- Result ---------- */
 
@@ -296,7 +295,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
 #fabs {
   position: absolute;
   right: 13px;
-  bottom: calc(13px + env(safe-area-inset-bottom, 0px));
+  bottom: 13px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -598,7 +597,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
 
 /* Crop screen */
 
-.crop-screen { background: rgba(0, 0, 0, 0.54); align-items: stretch; justify-content: flex-start; flex-direction: column; padding: 0; padding-bottom: env(safe-area-inset-bottom, 0px); z-index: 30; }
+.crop-screen { background: rgba(0, 0, 0, 0.54); align-items: stretch; justify-content: flex-start; flex-direction: column; padding: 0; z-index: 30; }
 
 .crop-bar {
   height: calc(56px + env(safe-area-inset-top, 0px));
@@ -668,7 +667,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
 #toasts {
   position: fixed;
   left: 50%;
-  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  bottom: 20px;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;

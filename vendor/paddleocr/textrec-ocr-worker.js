@@ -116,3 +116,5 @@ onnxruntime-web/dist/ort.wasm.bundle.min.mjs:
    * Licensed under the MIT License.
    *)
 */
+
+self.addEventListener("message",function(e){var d=e.data||{};if(d.type!=="warmup")return;var cfg=d.cfg||{};try{ED=cfg.backend==="wasm"}catch(x){}var jobs=[XF(cfg)];if(cfg.oriFile)jobs.push(mF(cfg.oriFile).catch(function(){return null}));Promise.all(jobs).then(function(){self.postMessage({type:"warmup-done",id:d.id})}).catch(function(err){self.postMessage({type:"warmup-error",id:d.id,message:String(err&&err.message||err)})})});
