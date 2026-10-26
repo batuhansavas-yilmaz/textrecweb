@@ -46,7 +46,8 @@ window.TEXTREC_STR = {
     toastShareUnsupported: 'Bu tarayıcı dosya paylaşımını desteklemiyor',
     toastShareFailed: 'Paylaşım açılamadı',
     toastOpenUnsupported: 'Bu dosya türü tarayıcıda açılamıyor; İndirilenler klasöründen açabilirsin',
-    toastOpenBlocked: 'Yeni sekme açılamadı; tarayıcı izin vermiyor olabilir'
+    toastOpenBlocked: 'Yeni sekme açılamadı; tarayıcı izin vermiyor olabilir',
+    toastIosSave: 'Dosya hazır. Kaydetmek için Paylaş simgesine dokun.'
   },
   en: {
     appbarTitle: 'Scan Text in Photo',
@@ -95,7 +96,8 @@ window.TEXTREC_STR = {
     toastShareUnsupported: 'This browser does not support file sharing',
     toastShareFailed: 'Could not open the share sheet',
     toastOpenUnsupported: "This file type can't be opened in the browser; open it from your Downloads folder",
-    toastOpenBlocked: 'Could not open a new tab; the browser may be blocking it'
+    toastOpenBlocked: 'Could not open a new tab; the browser may be blocking it',
+    toastIosSave: 'File is ready. Tap Share to save it.'
   },
   ru: {
     appbarTitle: 'Сканировать текст',
@@ -144,6 +146,7 @@ window.TEXTREC_STR = {
     toastShareUnsupported: 'Этот браузер не поддерживает обмен файлами',
     toastShareFailed: 'Не удалось открыть меню «Поделиться»',
     toastOpenUnsupported: 'Этот тип файла нельзя открыть в браузере; откройте его из папки «Загрузки»',
-    toastOpenBlocked: 'Не удалось открыть новую вкладку; возможно, браузер её блокирует'
+    toastOpenBlocked: 'Не удалось открыть новую вкладку; возможно, браузер её блокирует',
+    toastIosSave: 'Файл готов. Нажмите «Поделиться», чтобы сохранить.'
   }
 };

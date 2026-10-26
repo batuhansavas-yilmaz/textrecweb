@@ -48,7 +48,7 @@
   var OCR_DET_FILE = SMALL ? 'PP-OCRv6_tiny_det_onnx_infer.tar' : 'PP-OCRv6_medium_det_onnx_infer.tar';
   var OCR_REC_NAME = SMALL ? 'PP-OCRv6_small_rec' : 'PP-OCRv6_medium_rec';
   var OCR_REC_FILE = SMALL ? 'PP-OCRv6_small_rec_onnx_infer.tar' : 'PP-OCRv6_medium_rec_onnx_infer.tar';
-  var OCR_ORI_FILE = SMALL ? null : 'PP-LCNet_x1_0_doc_ori.onnx';
+  var OCR_ORI_FILE = 'PP-LCNet_x1_0_doc_ori.onnx';
   var OCR_WORKER_URL = 'vendor/paddleocr/textrec-ocr-worker.js?v=6';
   var OCR_BACKEND = 'auto';
 
@@ -138,6 +138,63 @@
   var pendingType = null;
   var lastFile = null;
   var lastFileUrl = null;
+
+  var OCR_LANG_STORAGE = 'textrec-ocr-lang';
+  var OCR_LANGS = {
+    ru: { label: 'Русский / Кириллица', name: 'cyrillic_PP-OCRv5_mobile_rec', file: 'cyrillic_PP-OCRv5_mobile_rec_onnx_infer.tar' },
+    ja: { label: '日本語', name: 'japan_PP-OCRv3_mobile_rec', file: 'japan_PP-OCRv3_mobile_rec_onnx_infer.tar' },
+    ch: { label: '中文', name: 'PP-OCRv5_mobile_rec', file: 'PP-OCRv5_mobile_rec_onnx_infer.tar' },
+    ko: { label: '한국어', name: 'korean_PP-OCRv5_mobile_rec', file: 'korean_PP-OCRv5_mobile_rec_onnx_infer.tar' },
+    ar: { label: 'العربية', name: 'arabic_PP-OCRv5_mobile_rec', file: 'arabic_PP-OCRv5_mobile_rec_onnx_infer.tar' },
+    el: { label: 'Ελληνικά', name: 'el_PP-OCRv5_mobile_rec', file: 'el_PP-OCRv5_mobile_rec_onnx_infer.tar' },
+    th: { label: 'ไทย', name: 'th_PP-OCRv5_mobile_rec', file: 'th_PP-OCRv5_mobile_rec_onnx_infer.tar' },
+    hi: { label: 'हिन्दी / Devanagari', name: 'devanagari_PP-OCRv5_mobile_rec', file: 'devanagari_PP-OCRv5_mobile_rec_onnx_infer.tar' },
+    ta: { label: 'தமிழ்', name: 'ta_PP-OCRv5_mobile_rec', file: 'ta_PP-OCRv5_mobile_rec_onnx_infer.tar' },
+    te: { label: 'తెలుగు', name: 'te_PP-OCRv5_mobile_rec', file: 'te_PP-OCRv5_mobile_rec_onnx_infer.tar' }
+  };
+  var ocrLang = 'latin';
+
+  function setOcrLang(id, remember) {
+    if (id !== 'latin' && !OCR_LANGS[id]) id = 'latin';
+    var spec = OCR_LANGS[id];
+    if (spec) {
+      OCR_REC_NAME = spec.name;
+      OCR_REC_FILE = spec.file;
+      OCR_DET_NAME = 'PP-OCRv6_tiny_det';
+      OCR_DET_FILE = 'PP-OCRv6_tiny_det_onnx_infer.tar';
+    } else {
+      OCR_REC_NAME = SMALL ? 'PP-OCRv6_small_rec' : 'PP-OCRv6_medium_rec';
+      OCR_REC_FILE = SMALL ? 'PP-OCRv6_small_rec_onnx_infer.tar' : 'PP-OCRv6_medium_rec_onnx_infer.tar';
+      OCR_DET_NAME = SMALL ? 'PP-OCRv6_tiny_det' : 'PP-OCRv6_medium_det';
+      OCR_DET_FILE = SMALL ? 'PP-OCRv6_tiny_det_onnx_infer.tar' : 'PP-OCRv6_medium_det_onnx_infer.tar';
+    }
+    ocrLang = id;
+    if (remember) {
+      try { localStorage.setItem(OCR_LANG_STORAGE, id); } catch (e) {}
+    }
+    if (worker) killWorker();
+    warmupPromise = null;
+  }
+
+  function detectOcrLang() {
+    try {
+      var saved = localStorage.getItem(OCR_LANG_STORAGE);
+      if (saved === 'latin' || OCR_LANGS[saved]) return saved;
+    } catch (e) {}
+    var ui = (navigator.language || '').toLowerCase().split('-')[0];
+    if (OCR_LANGS[ui]) return ui;
+    if (ui === 'zh') return 'ch';
+    if (ui === 'uk' || ui === 'be' || ui === 'bg' || ui === 'sr' || ui === 'mk' || ui === 'kk' || ui === 'ky' || ui === 'tg' || ui === 'mn') return 'ru';
+    if (ui === 'fa' || ui === 'ur' || ui === 'ps' || ui === 'ug') return 'ar';
+    if (ui === 'ne' || ui === 'mr' || ui === 'sa') return 'hi';
+    return 'latin';
+  }
+
+  function initOcrLang() {
+    var forced = QS.get('lang');
+    if (forced && forced !== 'latin' && !OCR_LANGS[forced]) forced = null;
+    setOcrLang(forced || detectOcrLang(), false);
+  }
 
   function toast(msg, ms) {
     var prev = Array.prototype.find.call(toasts.children, function (el) {
@@ -831,6 +888,13 @@
     return Promise.resolve(pdf.output('blob'));
   }
 
+  function isIosStandalone() {
+    return (navigator.standalone === true ||
+      (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)) &&
+      (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+  }
+
   function startDownload(type, name) {
     var value = resultText.value;
     var build = type === 'docx' ? buildDocx : type === 'pdf' ? buildPdf : buildTxt;
@@ -841,14 +905,19 @@
         if (lastFileUrl) { URL.revokeObjectURL(lastFileUrl); lastFileUrl = null; }
         lastFile = new File([blob], filename, { type: blob.type || 'application/octet-stream' });
         lastFileUrl = URL.createObjectURL(lastFile);
-        var a = document.createElement('a');
-        a.href = lastFileUrl;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        if (!isIosStandalone()) {
+          var a = document.createElement('a');
+          a.href = lastFileUrl;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        }
         succFileName.textContent = filename;
         dialogOpen(successDialog);
+        if (isIosStandalone()) {
+          toast(t('toastIosSave'), 6000);
+        }
       })
       .catch(function (err) {
         console.error(err);
@@ -1050,6 +1119,12 @@
   }
 
   applyLang();
+  initOcrLang();
+
+  if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches &&
+      navigator.onLine && !(navigator.connection && navigator.connection.saveData)) {
+    setTimeout(warmupOcr, 2500);
+  }
 
   if (location.protocol === 'file:') {
     toast(t('toastErrFileProtocol'), 9000);
