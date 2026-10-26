@@ -1,4 +1,4 @@
-var SHELL_CACHE = 'textrec-shell-v6';
+var SHELL_CACHE = 'textrec-shell-v7';
 var OCR_CACHE = 'textrec-ocr-v2';
 var OCR_PATH = new URL('vendor/paddleocr/', self.location.href).pathname;
 var APP_SHELL = [
@@ -29,25 +29,29 @@ var APP_SHELL = [
 ];
 
 self.addEventListener('install', function (event) {
-  event.waitUntil(
-    caches.open(SHELL_CACHE)
-      .then(function (cache) { return cache.addAll(APP_SHELL); })
-      .then(function () { return self.skipWaiting(); })
-  );
+  event.waitUntil((async function () {
+    var cache = await caches.open(SHELL_CACHE);
+    await Promise.all(APP_SHELL.map(function (url) {
+      return cache.add(url).catch(function () {});
+    }));
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', function (event) {
-  event.waitUntil(
-    caches.keys().then(function (keys) {
-      return Promise.all(
-        keys.map(function (key) {
-          if (key !== SHELL_CACHE && key !== OCR_CACHE) return caches.delete(key);
-        })
-      );
-    }).then(function () {
-      return self.clients.claim();
-    })
-  );
+  event.waitUntil((async function () {
+    var keys = await caches.keys();
+    await Promise.all(keys.map(function (key) {
+      if (key !== SHELL_CACHE && key !== OCR_CACHE) return caches.delete(key);
+    }));
+    var cache = await caches.open(SHELL_CACHE);
+    await Promise.all(APP_SHELL.map(function (url) {
+      return cache.match(url).then(function (hit) {
+        return hit || cache.add(url).catch(function () {});
+      });
+    }));
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener('fetch', function (event) {
@@ -55,19 +59,23 @@ self.addEventListener('fetch', function (event) {
   if (req.method !== 'GET') return;
 
   if (req.mode === 'navigate') {
-    event.respondWith(
-      fetch(req)
-        .then(function (res) {
-          var copy = res.clone();
-          caches.open(SHELL_CACHE).then(function (cache) {
-            cache.put('./index.html', copy);
-          });
-          return res;
-        })
-        .catch(function () {
-          return caches.match('./index.html');
-        })
-    );
+    event.respondWith((async function () {
+      var cached = await caches.match('./index.html');
+      if (cached) return cached;
+      try {
+        var res = await fetch(req);
+        if (res && res.ok) {
+          var cache = await caches.open(SHELL_CACHE);
+          cache.put('./index.html', res.clone());
+        }
+        return res;
+      } catch (e) {
+        return (await caches.match('./')) || new Response('Offline', {
+          status: 503,
+          headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+        });
+      }
+    })());
     return;
   }
 

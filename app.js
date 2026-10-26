@@ -1094,10 +1094,8 @@
   }
 
   if (!NO_SW && 'serviceWorker' in navigator && location.protocol !== 'file:') {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js').catch(function (err) {
-        console.warn('Service worker registration failed:', err);
-      });
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(function (err) {
+      console.warn('Service worker registration failed:', err);
     });
   }
 
