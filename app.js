@@ -64,9 +64,6 @@
   }
 
   function detectLang() {
-    var l = (navigator.language || 'en').toLowerCase();
-    if (l.slice(0, 2) === 'tr') return 'tr';
-    if (l.slice(0, 2) === 'ru') return 'ru';
     return 'en';
   }
 
