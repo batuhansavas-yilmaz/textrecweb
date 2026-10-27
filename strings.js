@@ -36,6 +36,7 @@ window.TEXTREC_STR = {
     ariaCropCancel: 'Cancel',
     ariaCropConfirm: 'Done',
     ariaRotate: 'Rotate',
+    ariaMirror: 'Mirror',
     statusOcr: 'Recognizing text…',
     toastCopied: 'Copied to Clipboard',
     toastNoData: 'No Data for Copy',

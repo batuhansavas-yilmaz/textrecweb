@@ -94,6 +94,7 @@
   var cropCancel = $('cropCancel');
   var cropConfirm = $('cropConfirm');
   var cropRotate = $('cropRotate');
+  var cropMirrorBtn = $('cropMirror');
   var loadingDialog = $('loadingDialog');
   var warnDialog = $('warnDialog');
   var warnOk = $('warnOk');
@@ -128,6 +129,7 @@
   var busy = false;
   var cropper = null;
   var cropRotateDeg = 0;
+  var cropMirror = false;
   var cropRotateSeq = 0;
   var cropBaseImage = null;
   var cropBakedUrl = null;
@@ -368,6 +370,8 @@
 
   function openCropScreen() {
     cropRotateDeg = 0;
+    cropMirror = false;
+    if (cropMirrorBtn) cropMirrorBtn.classList.remove('active');
     cropRotateSeq++;
     if (cropBakedUrl) { URL.revokeObjectURL(cropBakedUrl); cropBakedUrl = null; }
     cropBaseImage = new Image();
@@ -748,6 +752,16 @@
       ctx.setTransform(0, -1, 1, 0, 0, c.height);
     }
     ctx.drawImage(src, 0, 0, dw, dh);
+    if (cropMirror) {
+      var mirrored = document.createElement('canvas');
+      mirrored.width = c.width;
+      mirrored.height = c.height;
+      var mctx = mirrored.getContext('2d');
+      mctx.translate(c.width, 0);
+      mctx.scale(-1, 1);
+      mctx.drawImage(c, 0, 0);
+      return mirrored;
+    }
     return c;
   }
 
@@ -766,6 +780,25 @@
       cropper = new Cropper(cropImage, CROP_OPTS);
     });
   });
+
+  if (cropMirrorBtn) {
+    cropMirrorBtn.addEventListener('click', function () {
+      if (!cropper || !cropBaseImage) return;
+      cropMirror = !cropMirror;
+      cropMirrorBtn.classList.toggle('active', cropMirror);
+      var seq = ++cropRotateSeq;
+      var baked = bakeRotatedCanvas(cropBaseImage);
+      if (!baked) return;
+      canvasToBlob(baked).then(function (blob) {
+        if (!blob || seq !== cropRotateSeq) return;
+        if (cropBakedUrl) URL.revokeObjectURL(cropBakedUrl);
+        cropBakedUrl = URL.createObjectURL(blob);
+        if (cropper) { cropper.destroy(); cropper = null; }
+        cropImage.src = cropBakedUrl;
+        cropper = new Cropper(cropImage, CROP_OPTS);
+      });
+    });
+  }
 
   warnOk.addEventListener('click', function () {
     dialogClose(warnDialog);
