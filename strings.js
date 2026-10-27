@@ -5,7 +5,7 @@ window.TEXTREC_STR = {
     btnPhotos: 'Photos',
     animTitle: 'Snap,Scan,Save..',
     animSubtitle: 'Perform text scanning in an easy way.',
-    animFooter: 'Products That Make Life Easier',
+    animFooter: 'To Make Life Easier',
     cropTitle: 'Do you want crop ?',
     yes: 'YES',
     no: 'NO',
