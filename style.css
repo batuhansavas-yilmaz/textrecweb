@@ -420,7 +420,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
 
 .dlg-title { font-size: 19px; font-weight: 700; margin: 4px 0 10px; }
 
-.dlg-text { font-size: 17px; color: var(--txt); white-space: pre-line; margin: 6px 0 10px; }
+.dlg-text { font-size: 19px; font-weight: 500; color: var(--txt); white-space: pre-line; line-height: 1.35; margin: 10px 0 12px; }
 
 .warn-text { font-size: 17px; color: var(--warn-red); white-space: pre-line; margin: 8px 0 10px; }
 
