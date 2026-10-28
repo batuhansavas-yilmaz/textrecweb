@@ -1,4 +1,4 @@
-var SHELL_CACHE = 'textrec-shell-v13';
+var SHELL_CACHE = 'textrec-shell-v14';
 var OCR_CACHE = 'textrec-ocr-v2';
 var OCR_PATH = new URL('vendor/paddleocr/', self.location.href).pathname;
 var APP_SHELL = [

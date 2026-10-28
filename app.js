@@ -986,12 +986,17 @@
     toast(ok ? t('toastCopied') : t('toastCopyFail'));
   }
 
-  function showNameDialog(type) {
+  function autoFileName() {
+    var now = new Date();
+    function two(n) { return (n < 10 ? '0' : '') + n; }
+    return two(now.getDate()) + '.' + two(now.getMonth() + 1) + '.' +
+      now.getFullYear() + ' ' + two(now.getHours()) + '.' +
+      two(now.getMinutes()) + '-Textrec';
+  }
+
+  function saveWithAutoName(type) {
     pendingType = type;
-    nameError.hidden = true;
-    nameInput.value = '';
-    dialogOpen(nameDialog);
-    nameInput.focus();
+    startDownload(type, autoFileName());
   }
 
   fabMain.addEventListener('click', function () {
@@ -1019,17 +1024,17 @@
 
   docWord.addEventListener('click', function () {
     dialogClose(docTypeDialog);
-    showNameDialog('docx');
+    saveWithAutoName('docx');
   });
 
   docPdf.addEventListener('click', function () {
     dialogClose(docTypeDialog);
-    showNameDialog('pdf');
+    saveWithAutoName('pdf');
   });
 
   docText.addEventListener('click', function () {
     dialogClose(docTypeDialog);
-    showNameDialog('txt');
+    saveWithAutoName('txt');
   });
 
   nameSave.addEventListener('click', function () {
