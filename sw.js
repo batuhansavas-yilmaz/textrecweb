@@ -1,4 +1,4 @@
-var SHELL_CACHE = 'textrec-shell-v14';
+var SHELL_CACHE = 'textrec-shell-v15';
 var OCR_CACHE = 'textrec-ocr-v2';
 var OCR_PATH = new URL('vendor/paddleocr/', self.location.href).pathname;
 var APP_SHELL = [
@@ -17,6 +17,7 @@ var APP_SHELL = [
   './assets/apple-touch-icon.png',
   './assets/crop.png',
   './assets/favicon-32.png',
+  './assets/favicon.ico',
   './assets/github-button.png',
   './assets/icon-192.png',
   './assets/icon-512.png',
