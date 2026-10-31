@@ -1117,6 +1117,57 @@
     navigator.storage.persist().catch(function () {});
   }
 
+  initMobileShell();
+
+  function initMobileShell() {
+    if (!window.matchMedia || !window.matchMedia('(pointer: coarse)').matches) return;
+    var editableSelector = 'input, textarea, select, [contenteditable="true"], .selectable';
+    var pinchSelector = '.cropper-container';
+    var isEditable = function (target) {
+      return target instanceof Element && target.closest(editableSelector);
+    };
+    var isPinchAllowed = function (target) {
+      return target instanceof Element && target.closest(pinchSelector);
+    };
+
+    var stopGesture = function (event) {
+      if (!isPinchAllowed(event.target)) event.preventDefault();
+    };
+    ['gesturestart', 'gesturechange', 'gestureend'].forEach(function (type) {
+      document.addEventListener(type, stopGesture, { passive: false });
+    });
+
+    document.addEventListener('touchmove', function (event) {
+      if (event.touches.length > 1 && !isPinchAllowed(event.target)) event.preventDefault();
+    }, { passive: false });
+
+    var lastTouchEnd = 0;
+    document.addEventListener('touchend', function (event) {
+      if (event.touches.length > 0 || isPinchAllowed(event.target)) return;
+      var interactive = event.target instanceof Element &&
+        event.target.closest('button, a, label, input, textarea, select, [role="button"], [contenteditable="true"], .selectable');
+      if (interactive) return;
+      var now = Date.now();
+      if (now - lastTouchEnd < 320) event.preventDefault();
+      lastTouchEnd = now;
+    }, { passive: false });
+
+    document.addEventListener('contextmenu', function (event) {
+      if (isEditable(event.target)) return;
+      event.preventDefault();
+    });
+
+    document.addEventListener('selectstart', function (event) {
+      if (isEditable(event.target)) return;
+      event.preventDefault();
+    });
+
+    document.addEventListener('dragstart', function (event) {
+      if (isEditable(event.target)) return;
+      event.preventDefault();
+    });
+  }
+
   if (NO_SW && 'serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistrations().then(function (rs) {
       rs.forEach(function (r) { r.unregister(); });
