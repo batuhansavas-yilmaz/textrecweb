@@ -224,7 +224,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
   top: calc(11px + env(safe-area-inset-top, 0px));
   width: 34px;
   height: 34px;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
@@ -751,18 +751,9 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
   #animSubtitle { font-size: clamp(16px, 1.05vw, 27px); }
   #animFooter { font-size: clamp(14px, 0.9vw, 22px); }
 
-  .home-btns { grid-column: 2; grid-row: 1; flex-direction: column; gap: clamp(48px, 16vh, 200px); }
+  .home-btns { grid-column: 2; grid-row: 1; flex-direction: column; gap: clamp(14px, 2.2vh, 22px); }
 
-  .github-btn {
-    position: absolute;
-    left: 50%;
-    top: calc(100% + 84px);
-    width: 64px;
-    height: 64px;
-    transform: translateX(-50%);
-  }
-
-  .github-btn:active { transform: translateX(-50%) scale(0.96); }
+  .github-btn { display: none; }
 
   #cameraBtn, #photosBtn {
     width: clamp(240px, 26vw, 560px);
@@ -1100,5 +1091,151 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
     -webkit-user-drag: none;
     user-drag: none;
   }
+}
+
+/* From B.S.Y. promo card (desktop) */
+.frombsy-card {
+  display: flex;
+  position: relative;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+  isolation: isolate;
+  padding: 11px 13px;
+  border: 1px solid rgba(37, 99, 235, .16);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(160, 225, 245, .28), rgba(255, 255, 255, .65) 58%), #fff;
+  box-shadow: 0 10px 26px rgba(30, 64, 92, .10), 0 2px 6px rgba(30, 64, 92, .05);
+  color: #000;
+  text-align: left;
+  text-decoration: none;
+  transition: border-color .16s, background .16s;
+}
+
+.frombsy-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(37, 99, 235, .07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 99, 235, .07) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+  opacity: .9;
+}
+
+.frombsy-card::after {
+  content: "";
+  position: absolute;
+  right: -38px;
+  top: -52px;
+  z-index: -1;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 173, 181, .2), transparent 68%);
+  pointer-events: none;
+}
+
+.frombsy-card:hover { border-color: rgba(0, 140, 148, .4); }
+.frombsy-card:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+.frombsy-logo {
+  width: 46px;
+  height: 46px;
+  flex: none;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #00ADB5;
+}
+
+.frombsy-logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.frombsy-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  text-align: left;
+}
+
+.frombsy-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  line-height: 1.25;
+}
+
+.frombsy-sub {
+  margin-top: 3px;
+  overflow: hidden;
+  color: #5c7c94;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: .13em;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.frombsy-arrow {
+  width: 16px;
+  height: 16px;
+  margin-left: auto;
+  flex: none;
+  color: #5c7c94;
+  transition: color .16s, transform .16s;
+}
+
+.frombsy-card:hover .frombsy-arrow {
+  color: #008E96;
+  transform: translate(2px, -2px);
+}
+
+@media (min-width: 700px) {
+  .frombsy-card {
+    width: clamp(240px, 26vw, 560px);
+  }
+}
+
+@media (max-width: 699px) {
+  .home-btns {
+    flex-wrap: wrap;
+  }
+
+  .frombsy-card {
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .frombsy-card {
+    border-color: rgba(255, 255, 255, .14);
+    background: linear-gradient(135deg, rgba(0, 173, 181, .12), transparent 58%), #161d31;
+    box-shadow: 0 14px 34px rgba(2, 5, 18, .38), 0 2px 8px rgba(2, 5, 18, .22);
+    color: #eef1f8;
+  }
+
+  .frombsy-card::before {
+    background-image:
+      linear-gradient(rgba(140, 190, 255, .07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(140, 190, 255, .07) 1px, transparent 1px);
+  }
+
+  .frombsy-card:hover { border-color: rgba(0, 173, 181, .5); }
+
+  .frombsy-sub,
+  .frombsy-arrow { color: #8791b2; }
+
+  .frombsy-card:hover .frombsy-arrow { color: #2DD4CF; }
 }
 
