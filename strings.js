@@ -33,6 +33,7 @@ window.TEXTREC_STR = {
     ariaDownload: 'Download',
     ariaBack: 'Back',
     ariaMenu: 'Tools',
+    lastResult: 'Last scan result',
     ariaCropCancel: 'Cancel',
     ariaCropConfirm: 'Done',
     ariaRotate: 'Rotate',
