@@ -56,6 +56,19 @@ Telefonundan aynı adresi açıp ana ekrana kısayol olarak ekleyebilirsin.
 
 > Not: Kamera ve pano erişimi için HTTPS şarttır; GitHub Pages zaten HTTPS verir. `localhost` istisnadır (yerel test için).
 
+## Cloudflare Pages + R2 (opsiyonel)
+
+Cloudflare Pages'in 25 MiB/dosya limiti nedeniyle büyük OCR dosyaları R2'de tutulur. `vendor/paddleocr/models/*` ve `vendor/paddleocr/ort/*` istekleri Pages Function üzerinden R2'den servis edilir.
+
+1. `npx wrangler login`
+2. `npx wrangler r2 bucket create textrec-models`
+3. `powershell -ExecutionPolicy Bypass -File scripts/upload-r2.ps1`
+4. Cloudflare Pages → Create → Pages → Git → bu repo; build komutu `node scripts/build-pages.js`, output `dist`.
+5. Pages → Settings → Functions → R2 binding: `MODELS` = `textrec-models`.
+6. Deploy → `https://<proje>.pages.dev`.
+
+`scripts/build-pages.js`, `dist/` üretir ve büyük `models/`/`ort/` klasörlerini Pages'e koymaz. `wrangler.toml` R2 binding'ini tanımlar; panelde de eklemek gerekirse aynı isim kullanılır.
+
 ## İlk açılışta ne iner?
 
 İlk sayfa açılışı yalnızca arayüz dosyalarını (~0.5 MB) indirir; Kamera/Galeri'ye dokunmak tek başına indirme başlatmaz. OCR motoru, çalışma zamanı (ONNX Runtime Web) ve tanıma/yön modelleri fotoğraf seçildiğinde iner. Varsayılan small modellerde toplam ~45-60 MB, High accuracy (medium) açıksa ~155-175 MB iner; yani internet hızına ek bir dış servis bağımlılığı yoktur. Word/PDF kütüphaneleri yalnızca ilgili format seçildiğinde, kırpma aracı yalnızca kırpma seçildiğinde yüklenir. High accuracy ilk kez açılırken uyarı gösterilir; medium modeller indirildikten sonra bir daha sorulmaz. Dosyalar tarayıcı önbelleğine alınır, sonraki taramalar hızlıdır. Tanıma her zaman cihazda yapılır.
