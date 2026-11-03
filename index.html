@@ -16,7 +16,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="TextRec. for Web" />
-  <link rel="stylesheet" href="vendor/cropperjs/cropper.min.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -45,6 +44,9 @@
         </div>
       </div>
       <p id="homeCaption">TextRec. For Web</p>
+      <button id="accuracyBtn" class="accuracy-toggle" type="button" aria-pressed="false" hidden>
+        <span data-i18n="highAccuracy">High accuracy</span>
+      </button>
       <div class="home-btns">
         <button id="lastResultHomeBtn" class="btn-elev last-result-home" type="button" hidden>
           <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0-9-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
@@ -66,6 +68,9 @@
           </span>
           <svg class="frombsy-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
+        <button id="accuracyBtnDesktop" class="accuracy-toggle" type="button" aria-pressed="false" hidden>
+          <span data-i18n="highAccuracy">High accuracy</span>
+        </button>
         <a class="github-btn" href="https://batuhansavas-yilmaz.github.io/frombsy/" target="_blank" rel="noopener noreferrer" title="From B.S.Y." aria-label="Open the From B.S.Y. website">
           <img src="assets/github-button.png" alt="" />
         </a>
@@ -107,7 +112,7 @@
           <svg class="ic" viewBox="0 0 512 512" aria-hidden="true"><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 242.7-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7 288 32zM64 352c-35.3 0-64 28.7-64 64l0 32c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-32c0-35.3-28.7-64-64-64l-101.5 0-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352 64 352zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48z"/></svg>
         </button>
         <button class="main-fab" id="fabMain" type="button" data-i18n-aria="ariaMenu">
-          <img id="fabIconClose" src="assets/toolbox-close.webp" alt="" hidden />
+          <img id="fabIconClose" src="assets/toolbox-close.webp" alt="" loading="lazy" decoding="async" hidden />
           <svg class="ic" id="fabIconToolbox" viewBox="0 0 512 512" aria-hidden="true"><path d="M176 88l0 40 160 0 0-40c0-4.4-3.6-8-8-8L184 80c-4.4 0-8 3.6-8 8zm-48 40l0-40c0-30.9 25.1-56 56-56l144 0c30.9 0 56 25.1 56 56l0 40 28.1 0c12.7 0 24.9 5.1 33.9 14.1l51.9 51.9c9 9 14.1 21.2 14.1 33.9l0 92.1-128 0 0-32c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 32-128 0 0-32c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 32L0 320l0-92.1c0-12.7 5.1-24.9 14.1-33.9l51.9-51.9c9-9 21.2-14.1 33.9-14.1l28.1 0zM0 416l0-64 128 0c0 17.7 14.3 32 32 32s32-14.3 32-32l128 0c0 17.7 14.3 32 32 32s32-14.3 32-32l128 0 0 64c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64z"/></svg>
         </button>
       </div>
@@ -117,11 +122,22 @@
 
   <div class="overlay" id="cropDialog" hidden>
     <div class="dialog" role="dialog" aria-modal="true">
-      <img class="dlg-img" src="assets/crop.png" alt="" />
+      <img class="dlg-img" src="assets/crop.png" alt="" loading="lazy" decoding="async" />
       <p class="dlg-text" data-i18n="cropTitle">Do you want crop ?</p>
       <div class="dlg-actions">
         <button id="cropYes" type="button" data-i18n="yes">YES</button>
         <button id="cropNo" type="button" data-i18n="no">NO</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="accuracyDialog" hidden>
+    <div class="dialog" role="dialog" aria-modal="true">
+      <p class="dlg-title" data-i18n="highAccuracyTitle">High accuracy mode</p>
+      <p class="dlg-text" data-i18n="highAccuracyWarn">One-time ~110 MB model download, may be slower. Enable?</p>
+      <div class="dlg-actions">
+        <button id="accuracyEnable" type="button" data-i18n="enable">ENABLE</button>
+        <button id="accuracyCancel" type="button" data-i18n="cancel">CANCEL</button>
       </div>
     </div>
   </div>
@@ -136,7 +152,7 @@
 
   <div class="overlay blur" id="warnDialog" hidden>
     <div class="dialog" role="alertdialog" aria-modal="true">
-      <img class="dlg-img" src="assets/warning.png" alt="" />
+      <img class="dlg-img" src="assets/warning.png" alt="" loading="lazy" decoding="async" />
       <p class="warn-text" data-i18n="warnText">No text was detected in the photo.
 Please try another photo.</p>
       <div class="dlg-actions">
@@ -212,7 +228,7 @@ Please try another photo.</p>
 
   <div class="overlay blur" id="successDialog" hidden>
     <div class="dialog" role="dialog" aria-modal="true">
-      <img class="dlg-img" src="assets/succsess.png" alt="" />
+      <img class="dlg-img" src="assets/succsess.png" alt="" loading="lazy" decoding="async" />
       <p class="succ-msg"><span data-i18n="succLine1">Please check the</span> <b data-i18n="succLine2">DOWNLOAD</b><br /><span data-i18n="succLine3">folder.</span></p>
       <p class="succ-name"><span data-i18n="succNamePrefix">File name: </span><em id="succFileName"></em></p>
       <div class="dlg-actions icons">
@@ -231,10 +247,6 @@ Please try another photo.</p>
 
   <div id="toasts" aria-live="polite"></div>
 
-  <script src="vendor/cropperjs/cropper.min.js"></script>
-  <script src="vendor/pdffont_base64.js"></script>
-  <script src="vendor/docx.umd.js"></script>
-  <script src="vendor/jspdf.umd.min.js"></script>
   <script src="strings.js"></script>
   <script src="app.js"></script>
 </body>

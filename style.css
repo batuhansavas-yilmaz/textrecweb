@@ -216,6 +216,42 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
 
 #homeCaption { font-size: 20px; font-weight: 700; color: var(--txt); }
 
+.accuracy-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--guide);
+  background: var(--scaffold);
+  color: var(--txt);
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.accuracy-toggle::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #9aa3ad;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+.accuracy-toggle.active {
+  border-color: var(--blue);
+}
+
+.accuracy-toggle.active::before {
+  background: var(--blue);
+  box-shadow: 0 0 0 3px rgba(0, 135, 245, 0.16);
+}
+
+.accuracy-toggle:hover { filter: brightness(1.05); }
+.accuracy-toggle:active { filter: brightness(0.96); }
+
 .home-btns { display: flex; gap: 40px; align-items: center; position: relative; }
 
 .github-btn {
@@ -418,11 +454,11 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
   margin: 0 auto 8px;
 }
 
-.dlg-title { font-size: 19px; font-weight: 700; margin: 4px 0 10px; }
+.dlg-title { font-size: 19px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em; margin: 4px 0 10px; }
 
-.dlg-text { font-size: 19px; font-weight: 500; color: var(--txt); white-space: pre-line; line-height: 1.35; margin: 10px 0 12px; }
+.dlg-text { font-size: 16px; font-weight: 500; color: var(--txt); white-space: pre-line; line-height: 1.45; margin: 10px 0 12px; text-align: left; }
 
-.warn-text { font-size: 17px; color: var(--warn-red); white-space: pre-line; margin: 8px 0 10px; }
+.warn-text { font-size: 15px; color: var(--warn-red); white-space: pre-line; margin: 8px 0 10px; text-align: left; }
 
 .dlg-actions { display: flex; justify-content: flex-end; gap: 6px; padding: 2px 0 4px; }
 
@@ -440,13 +476,15 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
 
 #warnOk { color: var(--warn-red); }
 
+#accuracyCancel { color: var(--warn-red); }
+
 .dlg-actions.icons { justify-content: flex-end; gap: 8px; padding-right: 4px; }
 
 .dlg-actions.icons button { color: var(--succ-green); padding: 10px; }
 
 .dlg-actions.icons .ic { width: 26px; height: 26px; }
 
-.succ-msg { font-size: 15px; line-height: 1.4; text-align: left; margin: 6px 0 8px; }
+.succ-msg { font-size: 14px; line-height: 1.4; text-align: left; margin: 6px 0 8px; }
 
 .succ-name { font-size: 15px; text-align: left; margin: 2px 0 8px; }
 
@@ -767,6 +805,8 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
 
   #homeCaption { grid-column: 1 / -1; grid-row: 2; font-size: 22px; }
 
+  #accuracyBtn { display: none !important; }
+
   #resultView { padding: 22px clamp(24px, 7vw, 140px) 22px; }
 
   #resultText {
@@ -1045,6 +1085,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
 @media (max-width: 699px) {
   .home-btns { width: 100%; max-width: 300px; margin-left: auto; margin-right: auto; justify-content: center; gap: 16px; }
   #cameraBtn, #photosBtn { flex: 1 1 0; width: auto; min-width: 0; max-width: 142px; height: 58px; }
+  #accuracyBtnDesktop { display: none !important; }
 }
 
 /* Mobile app behavior */
@@ -1469,6 +1510,31 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
 
 .appbar-action:hover {
   background: var(--hover-soft);
+}
+
+#lastResultBtn.appbar-action {
+  width: 40px;
+  height: 40px;
+  top: calc(8px + env(safe-area-inset-top, 0px));
+  border: 1px solid var(--border-2);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--blue);
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
+}
+
+#lastResultBtn.appbar-action:hover {
+  border-color: var(--blue);
+  background: var(--surface);
+}
+
+#lastResultBtn.appbar-action:active {
+  transform: scale(0.98);
+}
+
+#lastResultBtn .ic {
+  width: 20px;
+  height: 20px;
 }
 
 .last-result-home {

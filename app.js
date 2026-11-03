@@ -4,10 +4,18 @@
   var STR = window.TEXTREC_STR;
   var QS = new URLSearchParams(location.search);
   var DBG = QS.get('debug') === '1';
-  var ACCURATE = QS.get('accurate') === '1';
-  var IS_MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-    (navigator.maxTouchPoints > 1 && Math.min(screen.width, screen.height) < 900);
-  var SMALL = QS.get('small') === '1' || (!ACCURATE && QS.get('small') !== '0' && IS_MOBILE);
+  var MODEL_MODE_STORAGE = 'textrec-model-mode';
+  var SMALL_OVERRIDE = null;
+  try {
+    var savedMode = localStorage.getItem(MODEL_MODE_STORAGE);
+    if (savedMode === 'small') SMALL_OVERRIDE = true;
+    else if (savedMode === 'medium') SMALL_OVERRIDE = false;
+  } catch (e) {}
+  var SMALL;
+  if (QS.get('small') === '1') SMALL = true;
+  else if (QS.get('small') === '0' || QS.get('accurate') === '1') SMALL = false;
+  else if (SMALL_OVERRIDE !== null) SMALL = SMALL_OVERRIDE;
+  else SMALL = true;
   var MAX_DIM = SMALL ? 1600 : 2400;
   var NO_SW = QS.get('nosw') === '1';
 
@@ -85,6 +93,10 @@
   var resultView = $('resultView');
   var cameraBtn = $('cameraBtn');
   var photosBtn = $('photosBtn');
+  var accuracyBtns = [ $('accuracyBtn'), $('accuracyBtnDesktop') ].filter(function (b) { return !!b; });
+  var accuracyDialog = $('accuracyDialog');
+  var accuracyEnable = $('accuracyEnable');
+  var accuracyCancel = $('accuracyCancel');
   var fileInput = $('fileInput');
   var cameraInput = $('cameraInput');
   var toasts = $('toasts');
@@ -211,6 +223,40 @@
     var forced = QS.get('lang');
     if (forced && forced !== 'latin' && !OCR_LANGS[forced]) forced = null;
     setOcrLang(forced || detectOcrLang(), false);
+  }
+
+  function updateAccuracyUI() {
+    var forced = QS.has('small') || QS.has('accurate');
+    var visible = !forced && ocrLang === 'latin';
+    accuracyBtns.forEach(function (btn) {
+      btn.hidden = !visible;
+      btn.classList.toggle('active', !SMALL);
+      btn.setAttribute('aria-pressed', SMALL ? 'false' : 'true');
+    });
+  }
+
+  function mediumModelsCached() {
+    if (!window.caches) return Promise.resolve(false);
+    var base = new URL('vendor/paddleocr/models/', location.href).href;
+    var urls = [
+      base + 'PP-OCRv6_medium_det_onnx_infer.tar',
+      base + 'PP-OCRv6_medium_rec_onnx_infer.tar'
+    ];
+    return Promise.all(urls.map(function (u) {
+      return caches.match(u).then(function (hit) { return !!hit; }).catch(function () { return false; });
+    })).then(function (hits) {
+      return hits.length === urls.length && hits.every(Boolean);
+    }).catch(function () { return false; });
+  }
+
+  function setAccurate(enabled) {
+    SMALL_OVERRIDE = !enabled;
+    SMALL = !enabled;
+    MAX_DIM = SMALL ? 1600 : 2400;
+    try { localStorage.setItem(MODEL_MODE_STORAGE, SMALL ? 'small' : 'medium'); } catch (e) {}
+    setOcrLang(ocrLang, false);
+    updateAccuracyUI();
+    toast(t(enabled ? 'toastAccurateOn' : 'toastAccurateOff'));
   }
 
   function toast(msg, ms) {
@@ -455,6 +501,7 @@
       return;
     }
     setImage(file);
+    warmupOcr();
     dialogOpen(cropDialog);
   }
 
@@ -485,6 +532,7 @@
     dialogHideNow(docTypeDialog);
     dialogHideNow(nameDialog);
     dialogHideNow(successDialog);
+    dialogHideNow(accuracyDialog);
     if (cropper) { cropper.destroy(); cropper = null; }
     if (lastFileUrl) { URL.revokeObjectURL(lastFileUrl); lastFileUrl = null; }
     lastFile = null;
@@ -517,6 +565,49 @@
     dragMode: 'move',
     guides: false
   };
+
+  var CROP_LIBS = {
+    css: 'vendor/cropperjs/cropper.min.css',
+    js: 'vendor/cropperjs/cropper.min.js'
+  };
+  var cropLoad = null;
+
+  function loadStyleOnce(href) {
+    return new Promise(function (resolve, reject) {
+      var existing = document.querySelector('link[data-crop-src="' + href + '"]');
+      if (existing) {
+        if (existing.getAttribute('data-loaded') === '1') { resolve(); return; }
+        existing.addEventListener('load', function () { resolve(); });
+        existing.addEventListener('error', function () { reject(new Error('Style load failed: ' + href)); });
+        return;
+      }
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      link.setAttribute('data-crop-src', href);
+      link.addEventListener('load', function () {
+        link.setAttribute('data-loaded', '1');
+        resolve();
+      });
+      link.addEventListener('error', function () {
+        reject(new Error('Style load failed: ' + href));
+      });
+      document.head.appendChild(link);
+    });
+  }
+
+  function ensureCropper() {
+    if (!cropLoad) {
+      cropLoad = Promise.all([
+        loadStyleOnce(CROP_LIBS.css),
+        loadScriptOnce(CROP_LIBS.js)
+      ]).catch(function (err) {
+        cropLoad = null;
+        throw err;
+      });
+    }
+    return cropLoad;
+  }
 
   function openCropScreen() {
     cropRotateDeg = 0;
@@ -698,8 +789,16 @@
     });
   }
 
+  function canWarmupOcr() {
+    var conn = navigator.connection;
+    if (!conn) return true;
+    if (conn.saveData) return false;
+    var et = conn.effectiveType;
+    return et !== 'slow-2g' && et !== '2g' && et !== '3g';
+  }
+
   function warmupOcr() {
-    if (warmupPromise || location.protocol === 'file:') return;
+    if (warmupPromise || location.protocol === 'file:' || !canWarmupOcr()) return;
     warmupPromise = ensureWorker().then(function (w) {
       return new Promise(function (resolve) {
         var finished = false;
@@ -722,9 +821,7 @@
     });
   }
 
-  [cameraBtn, photosBtn].forEach(function (btn) {
-    btn.addEventListener('pointerdown', warmupOcr, { passive: true });
-  });
+
 
   function buildPara(lines) {
     var merged = '';
@@ -877,7 +974,11 @@
 
   cropYes.addEventListener('click', function () {
     dialogClose(cropDialog);
-    openCropScreen();
+    ensureCropper().then(openCropScreen).catch(function (err) {
+      console.error(err);
+      toast(t('toastErrCrop'), 4200);
+      runOcrFlow();
+    });
   });
 
   cropNo.addEventListener('click', function () {
@@ -978,6 +1079,37 @@
     }
   });
 
+  function onAccuracyClick() {
+    if (!SMALL) {
+      setAccurate(false);
+      return;
+    }
+    mediumModelsCached().then(function (cached) {
+      if (cached) {
+        setAccurate(true);
+        return;
+      }
+      dialogOpen(accuracyDialog);
+    });
+  }
+
+  accuracyBtns.forEach(function (btn) {
+    btn.addEventListener('click', onAccuracyClick);
+  });
+
+  accuracyEnable.addEventListener('click', function () {
+    dialogClose(accuracyDialog);
+    setAccurate(true);
+  });
+
+  accuracyCancel.addEventListener('click', function () {
+    dialogClose(accuracyDialog);
+  });
+
+  accuracyDialog.addEventListener('click', function (e) {
+    if (e.target === accuracyDialog) dialogClose(accuracyDialog);
+  });
+
   backBtn.addEventListener('click', goHome);
   if (lastResultBtn) lastResultBtn.addEventListener('click', restoreLastResult);
   if (lastResultHomeBtn) lastResultHomeBtn.addEventListener('click', restoreLastResult);
@@ -1052,6 +1184,48 @@
     fabZoomOut.disabled = resultSize <= 13;
   }
 
+  var EXPORT_SCRIPTS = {
+    docx: ['vendor/docx.umd.js'],
+    pdf: ['vendor/jspdf.umd.min.js', 'vendor/pdffont_base64.js']
+  };
+  var exportLoads = {};
+
+  function loadScriptOnce(src) {
+    return new Promise(function (resolve, reject) {
+      var existing = document.querySelector('script[data-export-src="' + src + '"]');
+      if (existing) {
+        if (existing.getAttribute('data-loaded') === '1') { resolve(); return; }
+        existing.addEventListener('load', function () { resolve(); });
+        existing.addEventListener('error', function () { reject(new Error('Script load failed: ' + src)); });
+        return;
+      }
+      var s = document.createElement('script');
+      s.src = src;
+      s.async = true;
+      s.setAttribute('data-export-src', src);
+      s.addEventListener('load', function () {
+        s.setAttribute('data-loaded', '1');
+        resolve();
+      });
+      s.addEventListener('error', function () {
+        reject(new Error('Script load failed: ' + src));
+      });
+      document.head.appendChild(s);
+    });
+  }
+
+  function ensureExportLibs(type) {
+    var list = EXPORT_SCRIPTS[type];
+    if (!list) return Promise.resolve();
+    if (!exportLoads[type]) {
+      exportLoads[type] = Promise.all(list.map(loadScriptOnce)).catch(function (err) {
+        exportLoads[type] = null;
+        throw err;
+      });
+    }
+    return exportLoads[type];
+  }
+
   function buildTxt(value) {
     return Promise.resolve(new Blob([value], { type: 'text/plain;charset=utf-8' }));
   }
@@ -1113,6 +1287,7 @@
     var value = resultText.value;
     var build = type === 'docx' ? buildDocx : type === 'pdf' ? buildPdf : buildTxt;
     Promise.resolve()
+      .then(function () { return ensureExportLibs(type); })
       .then(function () { return build(value); })
       .then(function (blob) {
         var filename = name + '.' + type;
@@ -1135,7 +1310,7 @@
       })
       .catch(function (err) {
         console.error(err);
-        toast(t('toastErrOcr'));
+        toast(t('toastErrExport'), 4200);
       });
   }
 
@@ -1205,6 +1380,15 @@
     setFabsCollapsed(true);
     dialogOpen(docTypeDialog);
   });
+
+  function prefetchExportOnIntent(el, type) {
+    var load = function () { ensureExportLibs(type).catch(function () {}); };
+    el.addEventListener('pointerenter', load, { passive: true });
+    el.addEventListener('pointerdown', load, { passive: true });
+  }
+
+  prefetchExportOnIntent(docWord, 'docx');
+  prefetchExportOnIntent(docPdf, 'pdf');
 
   docWord.addEventListener('click', function () {
     dialogClose(docTypeDialog);
@@ -1388,6 +1572,7 @@
 
   applyLang();
   initOcrLang();
+  updateAccuracyUI();
   updateLastResultButton();
 
   if (window.matchMedia) {
@@ -1398,12 +1583,8 @@
 
   window.addEventListener('resize', function () {
     if (!resultView.hidden) fitPreview(false);
+    updateAccuracyUI();
   });
-
-  if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches &&
-      navigator.onLine && !(navigator.connection && navigator.connection.saveData)) {
-    setTimeout(warmupOcr, 2500);
-  }
 
   if (location.protocol === 'file:') {
     toast(t('toastErrFileProtocol'), 9000);

@@ -6,7 +6,7 @@ Fotoğraftaki yazıyı metne çeviren, **tamamen tarayıcıda çalışan** küç
 
 - OCR (yazı tanıma) [PaddleOCR.js](https://github.com/PaddlePaddle/PaddleOCR) ile **senin cihazında** yapılır. Fotoğraf hiçbir sunucuya yüklenmez.
 - Metin düzenleme, `.txt` / `.docx` / `.pdf` üretimi de tarayıcıda gerçekleşir.
-- Uygulama **fotoğrafını veya metnini saklamaz**: çerez yok, localStorage yok; tanıma sonrası fotoğraf ve metin hiçbir yere kaydedilmez. Service worker yalnızca tanıma motoru/model dosyalarını (`vendor/paddleocr/`) önbelleğe alır; böylece sonraki taramalar hızlıdır ve dosyalar yeniden indirilmez.
+- Uygulama **fotoğrafını veya metnini saklamaz**: çerez yok; yalnızca dil ve yüksek doğruluk tercihi localStorage'da tutulur. Tanıma sonrası fotoğraf ve metin hiçbir yere kaydedilmez. Service worker yalnızca tanıma motoru/model dosyalarını (`vendor/paddleocr/`) önbelleğe alır; böylece sonraki taramalar hızlıdır ve dosyalar yeniden indirilmez.
 - Sunucu tarafı (backend) yoktur; statik dosyalardan oluşur. Bu yüzden GitHub Pages gibi ücretsiz bir yere konabilir.
 
 ## Özellikler
@@ -19,6 +19,7 @@ Fotoğraftaki yazıyı metne çeviren, **tamamen tarayıcıda çalışan** küç
 - `.txt`, Word (`.docx`) ve PDF (`.pdf`) olarak indirme; dosya adını sen belirlersin (PDF'te Türkçe karakterler gömülü Rubik fontu ile sorunsuzdur)
 - İndirme sonrası başarı penceresi: PDF/TXT tarayıcıda önizleme, dosya paylaşımı (destekleyen tarayıcılarda), kapat
 - Tarama animasyonlu ana ekran; masaüstünde tam genişlik şerit, solda görsel ve sağda alt alta butonlar, sonuçta geniş okuma alanı; açık/koyu tema otomatik, mobil uyumlu arayüz
+- Masaüstü ve mobilde varsayılan hızlı/az veri tüketen **small** modeller; isteğe bağlı **High accuracy** modu medium modelleri indirir (~110 MB ek), varsayılan kapalı
 - Masaüstüne veya ana ekrana yüklenebilen PWA; kendi simgesiyle açılır
 
 ## Uygulama olarak yükleme (PWA)
@@ -57,7 +58,7 @@ Telefonundan aynı adresi açıp ana ekrana kısayol olarak ekleyebilirsin.
 
 ## İlk açılışta ne iner?
 
-OCR motoru, çalışma zamanı (ONNX Runtime Web) ve tanıma/yön modelleri (toplam ~175 MB) bu deponun içinden tarayıcıya iner; yani internet hızına ek bir dış servis bağımlılığı yoktur. Dosyalar tarayıcı önbelleğine alınır, sonraki taramalar hızlıdır. Tanıma her zaman cihazda yapılır.
+İlk sayfa açılışı yalnızca arayüz dosyalarını (~0.5 MB) indirir; Kamera/Galeri'ye dokunmak tek başına indirme başlatmaz. OCR motoru, çalışma zamanı (ONNX Runtime Web) ve tanıma/yön modelleri fotoğraf seçildiğinde iner. Varsayılan small modellerde toplam ~45-60 MB, High accuracy (medium) açıksa ~155-175 MB iner; yani internet hızına ek bir dış servis bağımlılığı yoktur. Word/PDF kütüphaneleri yalnızca ilgili format seçildiğinde, kırpma aracı yalnızca kırpma seçildiğinde yüklenir. High accuracy ilk kez açılırken uyarı gösterilir; medium modeller indirildikten sonra bir daha sorulmaz. Dosyalar tarayıcı önbelleğine alınır, sonraki taramalar hızlıdır. Tanıma her zaman cihazda yapılır.
 
 ## Kullanılan açık kaynak bileşenler
 
