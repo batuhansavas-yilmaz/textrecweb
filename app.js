@@ -138,6 +138,7 @@
   var pdfRangeStart = $('pdfRangeStart');
   var pdfRangeEnd = $('pdfRangeEnd');
   var pdfPageList = $('pdfPageList');
+  var pdfCommaBtn = $('pdfCommaBtn');
   var pdfPageError = $('pdfPageError');
   var pdfStart = $('pdfStart');
   var pdfCancel = $('pdfCancel');
@@ -1256,6 +1257,29 @@
       dialogClose(pdfOptionsDialog, function () {
         runPdfOcr(pages);
       });
+    });
+  }
+
+  function insertPdfComma() {
+    if (!pdfPageList) return;
+    var value = pdfPageList.value;
+    var start = pdfPageList.selectionStart == null ? value.length : pdfPageList.selectionStart;
+    var end = pdfPageList.selectionEnd == null ? value.length : pdfPageList.selectionEnd;
+    var before = value.slice(0, start);
+    if (!before.trim()) return;
+    if (/,\s*$/.test(before)) return;
+    var insert = ', ';
+    pdfPageList.value = before + insert + value.slice(end);
+    var pos = start + insert.length;
+    pdfPageList.setSelectionRange(pos, pos);
+    pdfPageList.focus();
+    if (pdfPageError) pdfPageError.hidden = true;
+  }
+
+  if (pdfCommaBtn) {
+    pdfCommaBtn.addEventListener('pointerdown', function (e) {
+      e.preventDefault();
+      insertPdfComma();
     });
   }
 

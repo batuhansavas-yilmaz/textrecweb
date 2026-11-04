@@ -1688,7 +1688,30 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
 }
 
 .pdf-range input#pdfPageList {
-  width: 100%;
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+}
+
+.pdf-comma {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--txt);
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pdf-comma:active {
+  filter: brightness(.92);
 }
 
 .pdf-range input:focus {

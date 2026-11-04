@@ -211,7 +211,8 @@ Please try another photo.</p>
           <span data-i18n="pdfModeList">Specific pages</span>
         </label>
         <div class="pdf-range" id="pdfListInputs" hidden>
-          <input id="pdfPageList" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="3, 4, 8" data-i18n-aria="pdfListLabel" />
+          <input id="pdfPageList" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" placeholder="3, 4, 8" data-i18n-aria="pdfListLabel" />
+          <button id="pdfCommaBtn" class="pdf-comma" type="button" aria-label="Add comma">,</button>
         </div>
         <p class="pdf-hint" data-i18n="pdfModeListHint">Example: 3, 4, 8 or 2-5</p>
       </div>
