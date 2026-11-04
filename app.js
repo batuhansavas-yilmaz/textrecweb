@@ -1576,7 +1576,7 @@
       if (mode === 'ios') succMessage.textContent = t(shareAvailable ? 'succIosReady' : 'succIosNoShare');
       else succMessage.textContent = t('succDownload');
     }
-    if (succOpen) succOpen.hidden = !lastFile || !/\.txt$/i.test(lastFile.name);
+    if (succOpen) succOpen.hidden = false;
     if (succShare) succShare.hidden = !(navigator.share && navigator.canShare);
     if (succFileName) succFileName.textContent = lastFile ? lastFile.name : '';
     dialogOpen(successDialog);
