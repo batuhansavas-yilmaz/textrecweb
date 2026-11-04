@@ -145,12 +145,6 @@
   var nameInput = $('nameInput');
   var nameError = $('nameError');
   var nameSave = $('nameSave');
-  var successDialog = $('successDialog');
-  var succMessage = $('succMessage');
-  var succFileName = $('succFileName');
-  var succOpen = $('succOpen');
-  var succShare = $('succShare');
-  var succClose = $('succClose');
 
   var imageFile = null;
   var imageUrl = null;
@@ -290,7 +284,7 @@
     setTimeout(function () {
       el.classList.remove('show');
       setTimeout(function () { el.remove(); }, 250);
-    }, ms || 2400);
+    }, ms || 2000);
   }
 
   function applyLang() {
@@ -577,7 +571,6 @@
     dialogHideNow(docTypeDialog);
     dialogHideNow(pdfOptionsDialog);
     dialogHideNow(nameDialog);
-    dialogHideNow(successDialog);
     dialogHideNow(accuracyDialog);
     if (cropper) { cropper.destroy(); cropper = null; }
     if (lastFileUrl) { URL.revokeObjectURL(lastFileUrl); lastFileUrl = null; }
@@ -1570,19 +1563,40 @@
       .then(function () { prebuildPromise = null; });
   }
 
-  function showSuccessDialog(mode) {
-    var shareAvailable = lastFile ? canShareFile(lastFile) : false;
-    if (succMessage) {
-      if (mode === 'ios') succMessage.textContent = t(shareAvailable ? 'succIosReady' : 'succIosNoShare');
-      else succMessage.textContent = t('succDownload');
-    }
-    if (succOpen) succOpen.hidden = false;
-    if (succShare) succShare.hidden = !(navigator.share && navigator.canShare);
-    if (succFileName) succFileName.textContent = lastFile ? lastFile.name : '';
-    dialogOpen(successDialog);
+  function anchorDownload(file) {
+    if (lastFileUrl) URL.revokeObjectURL(lastFileUrl);
+    lastFileUrl = URL.createObjectURL(file);
+    var a = document.createElement('a');
+    a.href = lastFileUrl;
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    toast(t('toastDownloadSuccess'), 2000);
   }
 
-  function finishExport(file, filename) {
+  function saveFileWithPicker(file) {
+    var ext = (file.name.split('.').pop() || '').toLowerCase();
+    var types = [];
+    if (ext === 'txt') {
+      types = [{ description: 'Text file', accept: { 'text/plain': ['.txt'] } }];
+    } else if (ext === 'docx') {
+      types = [{
+        description: 'Word document',
+        accept: { 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'] }
+      }];
+    }
+    return window.showSaveFilePicker({
+      suggestedName: file.name,
+      types: types
+    }).then(function (handle) {
+      return handle.createWritable().then(function (writable) {
+        return writable.write(file).then(function () { return writable.close(); });
+      });
+    });
+  }
+
+  function finishExport(file) {
     if (lastFileUrl) { URL.revokeObjectURL(lastFileUrl); lastFileUrl = null; }
     lastFile = file;
     lastFileUrl = URL.createObjectURL(lastFile);
@@ -1590,30 +1604,36 @@
     if (isIos()) {
       if (canShareFile(lastFile)) {
         navigator.share({ files: [lastFile] }).then(function () {
-          toast(t('toastShareSuccess'), 3600);
+          toast(t('toastShareSuccess'), 2000);
         }).catch(function (err) {
           if (err && err.name === 'AbortError') {
-            toast(t('toastShareCancelled'), 3600);
+            toast(t('toastShareCancelled'), 2000);
             return;
           }
           console.error(err);
-          showSuccessDialog('ios');
-          toast(t('toastShareFailed'), 4200);
+          toast(t('toastShareFailed'), 3000);
         });
         return;
       }
-      showSuccessDialog('ios');
-      toast(t('toastShareUnsupported'), 4200);
+      toast(t('toastShareUnsupported'), 3000);
       return;
     }
 
-    var a = document.createElement('a');
-    a.href = lastFileUrl;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    showSuccessDialog('download');
+    if (isDesktop() && window.isSecureContext && typeof window.showSaveFilePicker === 'function') {
+      saveFileWithPicker(lastFile).then(function () {
+        toast(t('toastDownloadSuccess'), 2000);
+      }).catch(function (err) {
+        if (err && err.name === 'AbortError') {
+          toast(t('toastDownloadCancelled'), 2000);
+          return;
+        }
+        console.error(err);
+        anchorDownload(lastFile);
+      });
+      return;
+    }
+
+    anchorDownload(lastFile);
   }
 
   function startDownload(type, name, prebuilt) {
@@ -1621,7 +1641,7 @@
     if (prebuilt) {
       finishExport(new File([prebuilt], filename, {
         type: prebuilt.type || 'application/octet-stream'
-      }), filename);
+      }));
       return;
     }
     var value = resultText.value;
@@ -1632,7 +1652,7 @@
       .then(function (blob) {
         finishExport(new File([blob], filename, {
           type: blob.type || 'application/octet-stream'
-        }), filename);
+        }));
       })
       .catch(function (err) {
         console.error(err);
@@ -1757,38 +1777,6 @@
     }
   }
 
-  succOpen.addEventListener('click', function () {
-    if (!lastFile || !lastFileUrl) return;
-    var ext = (lastFile.name.split('.').pop() || '').toLowerCase();
-    if (ext !== 'txt') {
-      toast(t('toastOpenUnsupported'), 4200);
-      return;
-    }
-    var win = window.open(lastFileUrl, '_blank');
-    if (!win) toast(t('toastOpenBlocked'));
-  });
-
-  succShare.addEventListener('click', function () {
-    if (!lastFile) return;
-    if (!canShareFile(lastFile)) {
-      toast(t('toastShareUnsupported'), 4200);
-      return;
-    }
-    navigator.share({ files: [lastFile] }).then(function () {
-      toast(t('toastShareSuccess'), 3600);
-    }).catch(function (err) {
-      if (err && err.name === 'AbortError') {
-        toast(t('toastShareCancelled'), 3600);
-        return;
-      }
-      toast(t('toastShareFailed'), 4200);
-    });
-  });
-
-  succClose.addEventListener('click', function () {
-    dialogClose(successDialog);
-  });
-
   docTypeDialog.addEventListener('click', function (e) {
     if (e.target === docTypeDialog) dialogClose(docTypeDialog);
   });
@@ -1796,14 +1784,6 @@
   nameDialog.addEventListener('click', function (e) {
     if (e.target === nameDialog) dialogClose(nameDialog);
   });
-
-  successDialog.addEventListener('click', function (e) {
-    if (e.target === successDialog) dialogClose(successDialog);
-  });
-
-  if (!(navigator.share && navigator.canShare)) {
-    succShare.hidden = true;
-  }
 
   window.addEventListener('pagehide', function () {
     killWorker();

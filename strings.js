@@ -38,13 +38,6 @@ window.TEXTREC_STR = {
     pdfPageError: 'Enter a valid page selection.',
     pdfStart: 'START',
     pdfNoText: 'No text was detected in the selected PDF pages.',
-    succNamePrefix: 'File name: ',
-    succDownload: "Download started. You can find the file in your browser's Downloads.",
-    succIosReady: 'Your file is ready. Tap Share to save it to Files or send it to another app.',
-    succIosNoShare: 'Your file is ready, but this browser cannot open the share sheet. Open the site over HTTPS to share it.',
-    btnOpen: 'Open',
-    btnShare: 'Share',
-    btnClose: 'Close',
     ariaZoomIn: 'Zoom in',
     ariaZoomOut: 'Zoom out',
     ariaCopy: 'Copy',
@@ -70,11 +63,10 @@ window.TEXTREC_STR = {
     toastErrCrop: 'Could not prepare the crop tool; scanning without crop.',
     toastErrFileProtocol: 'OCR cannot run because this page was opened from a local file (file://). Double-click "sunucu-baslat.bat" in the folder, or run "python -m http.server 8000" and open http://localhost:8000.',
     toastShareUnsupported: 'This browser does not support file sharing',
-    toastShareFailed: 'Could not open the share sheet. Tap Share to try again.',
+    toastShareFailed: 'Could not open the share sheet',
     toastShareSuccess: 'Shared successfully',
     toastShareCancelled: 'Sharing cancelled',
-    toastShareReady: 'Tap Share to save your file',
-    toastOpenUnsupported: "This file type can't be previewed in the browser",
-    toastOpenBlocked: 'Could not open a new tab; the browser may be blocking it'
+    toastDownloadSuccess: 'Download successful',
+    toastDownloadCancelled: 'Download cancelled'
   }
 };
