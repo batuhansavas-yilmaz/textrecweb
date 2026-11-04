@@ -110,7 +110,9 @@
   var cropRotate = $('cropRotate');
   var cropMirrorBtn = $('cropMirror');
   var loadingDialog = $('loadingDialog');
+  var loadingStatus = $('loadingStatus');
   var warnDialog = $('warnDialog');
+  var warnText = $('warnText');
   var warnOk = $('warnOk');
   var resultText = $('resultText');
   var resultImage = $('resultImage');
@@ -128,13 +130,23 @@
   var fabDownload = $('fabDownload');
   var docTypeDialog = $('docTypeDialog');
   var docWord = $('docWord');
-  var docPdf = $('docPdf');
   var docText = $('docText');
+  var pdfOptionsDialog = $('pdfOptionsDialog');
+  var pdfPageCountEl = $('pdfPageCount');
+  var pdfRangeInputs = $('pdfRangeInputs');
+  var pdfListInputs = $('pdfListInputs');
+  var pdfRangeStart = $('pdfRangeStart');
+  var pdfRangeEnd = $('pdfRangeEnd');
+  var pdfPageList = $('pdfPageList');
+  var pdfPageError = $('pdfPageError');
+  var pdfStart = $('pdfStart');
+  var pdfCancel = $('pdfCancel');
   var nameDialog = $('nameDialog');
   var nameInput = $('nameInput');
   var nameError = $('nameError');
   var nameSave = $('nameSave');
   var successDialog = $('successDialog');
+  var succMessage = $('succMessage');
   var succFileName = $('succFileName');
   var succOpen = $('succOpen');
   var succShare = $('succShare');
@@ -158,6 +170,12 @@
   var lastFileUrl = null;
   var lastScanFile = null;
   var lastResultText = '';
+  var pdfFile = null;
+  var pdfDoc = null;
+  var pdfPageTotal = 0;
+  var prebuiltExports = { txt: null, docx: null };
+  var prebuiltValue = '';
+  var prebuildPromise = null;
   var previewBaseImgW = 0;
   var previewBaseImgH = 0;
   var previewFrameX = 0;
@@ -296,6 +314,15 @@
     if (imageUrl) URL.revokeObjectURL(imageUrl);
     imageUrl = null;
     imageFile = null;
+  }
+
+  function clearPdf() {
+    if (pdfDoc) {
+      try { pdfDoc.destroy(); } catch (e) {}
+      pdfDoc = null;
+    }
+    pdfFile = null;
+    pdfPageTotal = 0;
   }
 
   var PAGE_MS = 360;
@@ -441,6 +468,12 @@
     requestAnimationFrame(function () { wrap.classList.remove('reset'); });
   }
 
+  function setLoadingStatus(text) {
+    if (!loadingStatus) return;
+    loadingStatus.textContent = text || '';
+    loadingStatus.hidden = !text;
+  }
+
   function dialogOpen(el) {
     if (el._dlgT) { clearTimeout(el._dlgT); el._dlgT = null; }
     el.classList.remove('closing');
@@ -494,12 +527,24 @@
     setTimeout(function () { ripple.remove(); }, 560);
   }, { passive: true });
 
+  function isPdfFile(file) {
+    return !!file && (file.type === 'application/pdf' || /\.pdf$/i.test(file.name || ''));
+  }
+
   function pickFile(file) {
     if (!file || busy) return;
+    if (isPdfFile(file)) {
+      clearPdf();
+      clearImage();
+      warmupOcr();
+      openPdf(file);
+      return;
+    }
     if (!file.type || file.type.indexOf('image/') !== 0) {
       toast(t('toastNotImage'));
       return;
     }
+    clearPdf();
     setImage(file);
     warmupOcr();
     dialogOpen(cropDialog);
@@ -530,12 +575,15 @@
     dialogHideNow(loadingDialog);
     dialogHideNow(warnDialog);
     dialogHideNow(docTypeDialog);
+    dialogHideNow(pdfOptionsDialog);
     dialogHideNow(nameDialog);
     dialogHideNow(successDialog);
     dialogHideNow(accuracyDialog);
     if (cropper) { cropper.destroy(); cropper = null; }
     if (lastFileUrl) { URL.revokeObjectURL(lastFileUrl); lastFileUrl = null; }
     lastFile = null;
+    resetPrebuilt();
+    clearPdf();
     homeView.hidden = false;
     if (fromResult && isDesktop()) {
       resultView.classList.remove('split-reveal');
@@ -703,6 +751,197 @@
         resolve(file);
       };
       img.src = u;
+    });
+  }
+
+  var PDFJS_URL = 'vendor/pdfjs/pdf.min.js';
+  var PDFJS_WORKER_URL = 'vendor/pdfjs/pdf.worker.min.js';
+  var pdfJsLoad = null;
+
+  function ensurePdfJs() {
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
+      return Promise.resolve(window.pdfjsLib);
+    }
+    if (!pdfJsLoad) {
+      pdfJsLoad = loadScriptOnce(PDFJS_URL).then(function () {
+        if (!window.pdfjsLib) throw new Error('PDF.js failed to load');
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
+        return window.pdfjsLib;
+      }).catch(function (err) {
+        pdfJsLoad = null;
+        throw err;
+      });
+    }
+    return pdfJsLoad;
+  }
+
+  function readFileBuffer(file) {
+    if (file.arrayBuffer) return file.arrayBuffer();
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () { resolve(reader.result); };
+      reader.onerror = function () { reject(reader.error || new Error('Could not read file')); };
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  function openPdf(file) {
+    if (location.protocol === 'file:') {
+      toast(t('toastErrFileProtocol'), 9000);
+      goHome();
+      return;
+    }
+    busy = true;
+    pdfFile = file;
+    setLoadingStatus(t('statusPdfReading'));
+    dialogOpen(loadingDialog);
+    Promise.all([ensurePdfJs(), readFileBuffer(file)])
+      .then(function (res) {
+        return res[0].getDocument({ data: new Uint8Array(res[1]) }).promise;
+      })
+      .then(function (doc) {
+        if (!pdfFile) {
+          try { doc.destroy(); } catch (e) {}
+          return;
+        }
+        pdfDoc = doc;
+        pdfPageTotal = doc.numPages;
+        busy = false;
+        dialogClose(loadingDialog);
+        openPdfOptions();
+      })
+      .catch(function (err) {
+        console.error(err);
+        busy = false;
+        dialogClose(loadingDialog);
+        clearPdf();
+        toast(t(err && err.name === 'PasswordException' ? 'toastPdfPassword' : 'toastErrPdf'), 5200);
+        goHome();
+      });
+  }
+
+  function openPdfOptions() {
+    if (!pdfOptionsDialog) return;
+    if (pdfPageCountEl) pdfPageCountEl.textContent = String(pdfPageTotal);
+    if (pdfRangeStart) pdfRangeStart.value = '1';
+    if (pdfRangeEnd) pdfRangeEnd.value = String(pdfPageTotal);
+    if (pdfPageList) pdfPageList.value = '';
+    if (pdfRangeInputs) pdfRangeInputs.hidden = true;
+    if (pdfListInputs) pdfListInputs.hidden = true;
+    if (pdfPageError) pdfPageError.hidden = true;
+    var all = document.querySelector('input[name="pdfMode"][value="all"]');
+    if (all) all.checked = true;
+    dialogOpen(pdfOptionsDialog);
+  }
+
+  function parsePdfTokens(raw, total) {
+    var tokens = String(raw || '').split(/[\s,;]+/).filter(Boolean);
+    if (!tokens.length) return null;
+    var out = [];
+    for (var i = 0; i < tokens.length; i++) {
+      var m = tokens[i].match(/^(\d+)(?:-(\d+))?$/);
+      if (!m) return null;
+      var a = parseInt(m[1], 10);
+      var b = m[2] ? parseInt(m[2], 10) : a;
+      if (a < 1 || b < a || b > total) return null;
+      for (var n = a; n <= b; n++) out.push(n);
+    }
+    out = out.filter(function (v, idx, arr) { return arr.indexOf(v) === idx; });
+    out.sort(function (a, b) { return a - b; });
+    return out.length ? out : null;
+  }
+
+  function selectedPdfPages() {
+    var checked = document.querySelector('input[name="pdfMode"]:checked');
+    var mode = checked ? checked.value : 'all';
+    if (mode === 'all') {
+      var allPages = [];
+      for (var i = 1; i <= pdfPageTotal; i++) allPages.push(i);
+      return allPages;
+    }
+    if (mode === 'range') {
+      var start = parseInt(pdfRangeStart.value, 10);
+      var end = parseInt(pdfRangeEnd.value, 10);
+      if (!isFinite(start) || !isFinite(end) || start < 1 || end < start || end > pdfPageTotal) return null;
+      var pages = [];
+      for (var p = start; p <= end; p++) pages.push(p);
+      return pages;
+    }
+    return parsePdfTokens(pdfPageList.value, pdfPageTotal);
+  }
+
+  function renderPdfPage(pdf, pageNum) {
+    return pdf.getPage(pageNum).then(function (page) {
+      var base = page.getViewport({ scale: 1 });
+      var scale = Math.min(3, MAX_DIM / Math.max(base.width, base.height));
+      var viewport = page.getViewport({ scale: scale });
+      var canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.floor(viewport.width));
+      canvas.height = Math.max(1, Math.floor(viewport.height));
+      var ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      return page.render({ canvasContext: ctx, viewport: viewport }).promise.then(function () {
+        return canvasToBlob(canvas);
+      });
+    });
+  }
+
+  function runPdfOcr(pages) {
+    if (location.protocol === 'file:') {
+      toast(t('toastErrFileProtocol'), 9000);
+      goHome();
+      return;
+    }
+    if (!pdfDoc || !pages || !pages.length) return;
+    busy = true;
+    setLoadingStatus(t('statusPdfReading'));
+    dialogOpen(loadingDialog);
+    var results = [];
+    var firstBlob = null;
+    var chain = Promise.resolve();
+    pages.forEach(function (pageNum, index) {
+      chain = chain.then(function () {
+        setLoadingStatus(t('statusPdfPage').replace('{n}', String(index + 1)).replace('{total}', String(pages.length)));
+        return renderPdfPage(pdfDoc, pageNum).then(function (blob) {
+          if (!firstBlob) firstBlob = blob;
+          return ocrWithFallback(blob);
+        }).then(function (out) {
+          var pageText = itemsToText(out.items);
+          pageText = pageText.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+          if (pageText) results.push({ page: pageNum, text: pageText });
+        });
+      });
+    });
+    chain.then(function () {
+      busy = false;
+      dialogClose(loadingDialog);
+      if (!results.length) {
+        if (warnText) warnText.textContent = t('pdfNoText');
+        dialogOpen(warnDialog);
+        return;
+      }
+      var text;
+      if (results.length === 1 && pages.length === 1) {
+        text = results[0].text;
+      } else {
+        text = results.map(function (r) {
+          return '--- Page ' + r.page + ' ---\n' + r.text;
+        }).join('\n\n');
+      }
+      clearPdf();
+      if (firstBlob) {
+        setImage(new File([firstBlob], 'pdf-page-' + pages[0] + '.jpg', { type: 'image/jpeg' }));
+      }
+      showResult(text);
+    }).catch(function (err) {
+      console.error(err);
+      busy = false;
+      dialogClose(loadingDialog);
+      clearPdf();
+      toast(t('toastErrOcr'), 5200);
+      goHome();
     });
   }
 
@@ -912,6 +1151,7 @@
       return;
     }
     busy = true;
+    setLoadingStatus(t('statusOcr'));
     dialogOpen(loadingDialog);
     ensureWorker()
       .then(function () {
@@ -927,6 +1167,7 @@
         busy = false;
         dialogClose(loadingDialog);
         if (!text) {
+          if (warnText) warnText.textContent = t('warnText');
           dialogOpen(warnDialog);
           return;
         }
@@ -943,6 +1184,7 @@
   }
 
   function showResult(text) {
+    resetPrebuilt();
     lastScanFile = imageFile;
     lastResultText = text;
     resultText.value = text;
@@ -984,6 +1226,56 @@
   cropNo.addEventListener('click', function () {
     dialogClose(cropDialog);
     runOcrFlow();
+  });
+
+  document.querySelectorAll('input[name="pdfMode"]').forEach(function (radio) {
+    radio.addEventListener('change', function () {
+      var mode = radio.value;
+      if (pdfRangeInputs) pdfRangeInputs.hidden = mode !== 'range';
+      if (pdfListInputs) pdfListInputs.hidden = mode !== 'list';
+      if (pdfPageError) pdfPageError.hidden = true;
+      if (mode === 'range' && pdfRangeStart) pdfRangeStart.focus();
+      if (mode === 'list' && pdfPageList) pdfPageList.focus();
+    });
+  });
+
+  function closePdfOptions() {
+    dialogClose(pdfOptionsDialog);
+    clearPdf();
+    clearImage();
+    goHome();
+  }
+
+  if (pdfCancel) pdfCancel.addEventListener('click', closePdfOptions);
+
+  if (pdfOptionsDialog) {
+    pdfOptionsDialog.addEventListener('click', function (e) {
+      if (e.target === pdfOptionsDialog) closePdfOptions();
+    });
+  }
+
+  if (pdfStart) {
+    pdfStart.addEventListener('click', function () {
+      var pages = selectedPdfPages();
+      if (!pages) {
+        if (pdfPageError) pdfPageError.hidden = false;
+        return;
+      }
+      if (pdfPageError) pdfPageError.hidden = true;
+      dialogClose(pdfOptionsDialog, function () {
+        runPdfOcr(pages);
+      });
+    });
+  }
+
+  [pdfRangeStart, pdfRangeEnd, pdfPageList].forEach(function (input) {
+    if (!input) return;
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (pdfStart) pdfStart.click();
+      }
+    });
   });
 
   cropCancel.addEventListener('click', function () {
@@ -1185,8 +1477,7 @@
   }
 
   var EXPORT_SCRIPTS = {
-    docx: ['vendor/docx.umd.js'],
-    pdf: ['vendor/jspdf.umd.min.js', 'vendor/pdffont_base64.js']
+    docx: ['vendor/docx.umd.js']
   };
   var exportLoads = {};
 
@@ -1247,66 +1538,101 @@
     return docx.Packer.toBlob(doc);
   }
 
-  function buildPdf(value) {
-    var jsPDF = window.jspdf.jsPDF;
-    var pdf = new jsPDF({ unit: 'mm', format: 'a4' });
-    pdf.addFileToVFS('Rubik.ttf', window.PDF_FONT_BASE64);
-    pdf.addFont('Rubik.ttf', 'Rubik', 'normal');
-    pdf.setFont('Rubik');
-    pdf.setFontSize(11);
-
-    var margin = 18;
-    var top = 22;
-    var bottom = 275;
-    var lineHeight = 5.4;
-    var maxWidth = 210 - margin * 2;
-    var y = top;
-
-    value.split('\n').forEach(function (raw) {
-      pdf.splitTextToSize(raw.length ? raw : ' ', maxWidth).forEach(function (line) {
-        if (y > bottom) {
-          pdf.addPage();
-          y = top;
-        }
-        pdf.text(line, margin, y);
-        y += lineHeight;
-      });
-    });
-
-    return Promise.resolve(pdf.output('blob'));
+  function isIos() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   }
 
-  function isIosStandalone() {
-    return (navigator.standalone === true ||
-      (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)) &&
-      (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
-        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+  function resetPrebuilt() {
+    prebuiltExports = { txt: null, docx: null };
+    prebuiltValue = '';
+    prebuildPromise = null;
   }
 
-  function startDownload(type, name) {
+  function prebuildExports(value) {
+    if (!value) return;
+    if (prebuiltValue === value && (prebuiltExports.txt || prebuildPromise)) return;
+    prebuiltValue = value;
+    prebuiltExports = { txt: null, docx: null };
+    prebuildPromise = Promise.resolve()
+      .then(function () { return buildTxt(value); })
+      .then(function (blob) {
+        if (prebuiltValue === value) prebuiltExports.txt = blob;
+        return ensureExportLibs('docx');
+      })
+      .then(function () { return buildDocx(value); })
+      .then(function (blob) {
+        if (prebuiltValue === value) prebuiltExports.docx = blob;
+      })
+      .catch(function (err) {
+        console.error(err);
+      })
+      .then(function () { prebuildPromise = null; });
+  }
+
+  function showSuccessDialog(mode) {
+    var shareAvailable = lastFile ? canShareFile(lastFile) : false;
+    if (succMessage) {
+      if (mode === 'ios') succMessage.textContent = t(shareAvailable ? 'succIosReady' : 'succIosNoShare');
+      else succMessage.textContent = t('succDownload');
+    }
+    if (succOpen) succOpen.hidden = !lastFile || !/\.txt$/i.test(lastFile.name);
+    if (succShare) succShare.hidden = !shareAvailable;
+    if (succFileName) succFileName.textContent = lastFile ? lastFile.name : '';
+    dialogOpen(successDialog);
+  }
+
+  function finishExport(file, filename) {
+    if (lastFileUrl) { URL.revokeObjectURL(lastFileUrl); lastFileUrl = null; }
+    lastFile = file;
+    lastFileUrl = URL.createObjectURL(lastFile);
+
+    if (isIos()) {
+      if (canShareFile(lastFile)) {
+        navigator.share({ files: [lastFile], title: lastFile.name }).then(function () {
+          toast(t('toastShareSuccess'), 3600);
+        }).catch(function (err) {
+          if (err && err.name === 'AbortError') {
+            toast(t('toastShareCancelled'), 3600);
+            return;
+          }
+          console.error(err);
+          showSuccessDialog('ios');
+          toast(t('toastShareFailed'), 4200);
+        });
+        return;
+      }
+      showSuccessDialog('ios');
+      toast(t('toastShareUnsupported'), 4200);
+      return;
+    }
+
+    var a = document.createElement('a');
+    a.href = lastFileUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    showSuccessDialog('download');
+  }
+
+  function startDownload(type, name, prebuilt) {
+    var filename = name + '.' + type;
+    if (prebuilt) {
+      finishExport(new File([prebuilt], filename, {
+        type: prebuilt.type || 'application/octet-stream'
+      }), filename);
+      return;
+    }
     var value = resultText.value;
-    var build = type === 'docx' ? buildDocx : type === 'pdf' ? buildPdf : buildTxt;
+    var build = type === 'docx' ? buildDocx : buildTxt;
     Promise.resolve()
       .then(function () { return ensureExportLibs(type); })
       .then(function () { return build(value); })
       .then(function (blob) {
-        var filename = name + '.' + type;
-        if (lastFileUrl) { URL.revokeObjectURL(lastFileUrl); lastFileUrl = null; }
-        lastFile = new File([blob], filename, { type: blob.type || 'application/octet-stream' });
-        lastFileUrl = URL.createObjectURL(lastFile);
-        if (!isIosStandalone()) {
-          var a = document.createElement('a');
-          a.href = lastFileUrl;
-          a.download = filename;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-        }
-        succFileName.textContent = filename;
-        dialogOpen(successDialog);
-        if (isIosStandalone()) {
-          toast(t('toastIosSave'), 6000);
-        }
+        finishExport(new File([blob], filename, {
+          type: blob.type || 'application/octet-stream'
+        }), filename);
       })
       .catch(function (err) {
         console.error(err);
@@ -1355,7 +1681,9 @@
 
   function saveWithAutoName(type) {
     pendingType = type;
-    startDownload(type, autoFileName());
+    var value = resultText.value;
+    var prebuilt = (prebuiltValue === value && prebuiltExports[type]) || null;
+    startDownload(type, autoFileName(), prebuilt);
   }
 
   fabMain.addEventListener('click', function () {
@@ -1377,6 +1705,7 @@
 
   fabDownload.addEventListener('click', function () {
     if (!resultText.value) return;
+    prebuildExports(resultText.value);
     setFabsCollapsed(true);
     dialogOpen(docTypeDialog);
   });
@@ -1388,16 +1717,10 @@
   }
 
   prefetchExportOnIntent(docWord, 'docx');
-  prefetchExportOnIntent(docPdf, 'pdf');
 
   docWord.addEventListener('click', function () {
     dialogClose(docTypeDialog);
     saveWithAutoName('docx');
-  });
-
-  docPdf.addEventListener('click', function () {
-    dialogClose(docTypeDialog);
-    saveWithAutoName('pdf');
   });
 
   docText.addEventListener('click', function () {
@@ -1437,7 +1760,7 @@
   succOpen.addEventListener('click', function () {
     if (!lastFile || !lastFileUrl) return;
     var ext = (lastFile.name.split('.').pop() || '').toLowerCase();
-    if (ext !== 'txt' && ext !== 'pdf') {
+    if (ext !== 'txt') {
       toast(t('toastOpenUnsupported'), 4200);
       return;
     }
@@ -1451,8 +1774,13 @@
       toast(t('toastShareUnsupported'), 4200);
       return;
     }
-    navigator.share({ files: [lastFile], title: lastFile.name }).catch(function (err) {
-      if (err && err.name === 'AbortError' && /cancel/i.test(err.message || '')) return;
+    navigator.share({ files: [lastFile], title: lastFile.name }).then(function () {
+      toast(t('toastShareSuccess'), 3600);
+    }).catch(function (err) {
+      if (err && err.name === 'AbortError') {
+        toast(t('toastShareCancelled'), 3600);
+        return;
+      }
       toast(t('toastShareFailed'), 4200);
     });
   });
@@ -1548,7 +1876,15 @@
   }
 
   if (!NO_SW && 'serviceWorker' in navigator && location.protocol !== 'file:') {
-    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(function (err) {
+    var swRefreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (swRefreshing) return;
+      swRefreshing = true;
+      location.reload();
+    });
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function (registration) {
+      if (registration && registration.update) registration.update().catch(function () {});
+    }).catch(function (err) {
       console.warn('Service worker registration failed:', err);
     });
   }

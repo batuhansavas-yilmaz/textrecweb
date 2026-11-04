@@ -57,8 +57,8 @@
           <span data-i18n="btnCamera">Camera</span>
         </button>
         <button id="photosBtn" class="btn-elev" type="button">
-          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
-          <span data-i18n="btnPhotos">Photos</span>
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2z"/></svg>
+          <span data-i18n="btnPhotos">Select File</span>
         </button>
         <a class="frombsy-card" href="https://batuhansavas-yilmaz.github.io/frombsy/" target="_blank" rel="noopener noreferrer" aria-label="From B.S.Y.">
           <span class="frombsy-logo" aria-hidden="true"><img src="assets/frombsy-icon.png" alt="" width="46" height="46"></span>
@@ -75,7 +75,7 @@
           <img src="assets/github-button.png" alt="" />
         </a>
       </div>
-      <input type="file" id="fileInput" accept="image/*" hidden />
+      <input type="file" id="fileInput" accept="image/*,application/pdf,.pdf" hidden />
       <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden />
     </main>
 
@@ -143,17 +143,20 @@
   </div>
 
   <div class="overlay blur" id="loadingDialog" hidden>
-    <div class="loading-card" role="status" data-i18n-aria="statusOcr">
-      <div class="sk-fading-circle" aria-hidden="true">
-        <span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span>
+    <div class="loading-stack">
+      <div class="loading-card" role="status" data-i18n-aria="statusOcr">
+        <div class="sk-fading-circle" aria-hidden="true">
+          <span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span><span class="sk-circle"></span>
+        </div>
       </div>
+      <p id="loadingStatus" class="loading-status" hidden></p>
     </div>
   </div>
 
   <div class="overlay blur" id="warnDialog" hidden>
     <div class="dialog" role="alertdialog" aria-modal="true">
       <img class="dlg-img" src="assets/warning.png" alt="" loading="lazy" decoding="async" />
-      <p class="warn-text" data-i18n="warnText">No text was detected in the photo.
+      <p class="warn-text" id="warnText" data-i18n="warnText">No text was detected in the photo.
 Please try another photo.</p>
       <div class="dlg-actions">
         <button id="warnOk" type="button" data-i18n="ok">OK</button>
@@ -184,6 +187,41 @@ Please try another photo.</p>
     </div>
   </div>
 
+  <div class="overlay" id="pdfOptionsDialog" hidden>
+    <div class="dialog pdf-dialog" role="dialog" aria-modal="true" aria-labelledby="pdfOptionsTitle">
+      <p class="dlg-title" id="pdfOptionsTitle" data-i18n="pdfOptionsTitle">PDF OCR</p>
+      <p class="pdf-info"><span data-i18n="pdfPagesLabel">Pages</span>: <b id="pdfPageCount">—</b></p>
+      <div class="pdf-modes">
+        <label class="pdf-mode">
+          <input type="radio" name="pdfMode" value="all" checked />
+          <span data-i18n="pdfModeAll">All pages</span>
+        </label>
+        <label class="pdf-mode">
+          <input type="radio" name="pdfMode" value="range" />
+          <span data-i18n="pdfModeRange">Page range</span>
+        </label>
+        <div class="pdf-range" id="pdfRangeInputs" hidden>
+          <input id="pdfRangeStart" type="number" min="1" inputmode="numeric" placeholder="1" data-i18n-aria="pdfRangeStartLabel" />
+          <span class="pdf-dash">–</span>
+          <input id="pdfRangeEnd" type="number" min="1" inputmode="numeric" placeholder="1" data-i18n-aria="pdfRangeEndLabel" />
+        </div>
+        <label class="pdf-mode">
+          <input type="radio" name="pdfMode" value="list" />
+          <span data-i18n="pdfModeList">Specific pages</span>
+        </label>
+        <div class="pdf-range" id="pdfListInputs" hidden>
+          <input id="pdfPageList" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" placeholder="3, 4, 8" data-i18n-aria="pdfListLabel" />
+        </div>
+        <p class="pdf-hint" data-i18n="pdfModeListHint">Example: 3, 4, 8 or 2-5</p>
+      </div>
+      <p id="pdfPageError" class="name-error" hidden data-i18n="pdfPageError">Enter a valid page selection.</p>
+      <div class="dlg-actions">
+        <button id="pdfCancel" type="button" data-i18n="cancel">CANCEL</button>
+        <button id="pdfStart" type="button" data-i18n="pdfStart">START</button>
+      </div>
+    </div>
+  </div>
+
   <div class="overlay" id="docTypeDialog" hidden>
     <div class="dialog" role="dialog" aria-modal="true">
       <p class="dlg-title" data-i18n="docTypeTitle">Document Type</p>
@@ -193,13 +231,6 @@ Please try another photo.</p>
           <span class="doc-body">
             <span data-i18n="docWordLabel">Word Document</span>
             <span class="doc-ext">(.docx)</span>
-          </span>
-        </button>
-        <button class="doc-option" id="docPdf" type="button">
-          <svg class="ic" viewBox="0 0 512 512" aria-hidden="true"><path d="M0 64C0 28.7 28.7 0 64 0L224 0l0 128c0 17.7 14.3 32 32 32l128 0 0 144-208 0c-35.3 0-64 28.7-64 64l0 144-48 0c-35.3 0-64-28.7-64-64L0 64zm384 64l-128 0L256 0 384 128zM176 352l32 0c30.9 0 56 25.1 56 56s-25.1 56-56 56l-16 0 0 32c0 8.8-7.2 16-16 16s-16-7.2-16-16l0-48 0-80c0-8.8 7.2-16 16-16zm32 80c13.3 0 24-10.7 24-24s-10.7-24-24-24l-16 0 0 48 16 0zm96-80l32 0c26.5 0 48 21.5 48 48l0 64c0 26.5-21.5 48-48 48l-32 0c-8.8 0-16-7.2-16-16l0-128c0-8.8 7.2-16 16-16zm32 128c8.8 0 16-7.2 16-16l0-64c0-8.8-7.2-16-16-16l-16 0 0 96 16 0zm80-112c0-8.8 7.2-16 16-16l48 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-32 0 0 32 32 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-32 0 0 48c0 8.8-7.2 16-16 16s-16-7.2-16-16l0-64 0-64z"/></svg>
-          <span class="doc-body">
-            <span data-i18n="docPdfLabel">PDF Document</span>
-            <span class="doc-ext">(.pdf)</span>
           </span>
         </button>
         <button class="doc-option" id="docText" type="button">
@@ -229,7 +260,7 @@ Please try another photo.</p>
   <div class="overlay blur" id="successDialog" hidden>
     <div class="dialog" role="dialog" aria-modal="true">
       <img class="dlg-img" src="assets/succsess.png" alt="" loading="lazy" decoding="async" />
-      <p class="succ-msg"><span data-i18n="succLine1">Please check the</span> <b data-i18n="succLine2">DOWNLOAD</b><br /><span data-i18n="succLine3">folder.</span></p>
+      <p class="succ-msg" id="succMessage"></p>
       <p class="succ-name"><span data-i18n="succNamePrefix">File name: </span><em id="succFileName"></em></p>
       <div class="dlg-actions icons">
         <button id="succOpen" type="button" data-i18n-aria="btnOpen">
@@ -247,7 +278,38 @@ Please try another photo.</p>
 
   <div id="toasts" aria-live="polite"></div>
 
+  <div class="orientation-gate" id="orientationGate" role="dialog" aria-modal="true" aria-labelledby="orientationTitle" aria-describedby="orientationCopy" aria-hidden="true" tabindex="-1">
+    <div class="orientation-gate-card">
+      <svg class="orientation-icon" viewBox="0 0 112 112" aria-hidden="true">
+        <defs>
+          <linearGradient id="og-bg" x1="8" y1="4" x2="104" y2="108" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#5b5bd6"/>
+            <stop offset="1" stop-color="#171d45"/>
+          </linearGradient>
+          <linearGradient id="og-arrow" x1="30" y1="20" x2="84" y2="46" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#8df7e9"/>
+            <stop offset="1" stop-color="#42dccb"/>
+          </linearGradient>
+        </defs>
+        <rect width="112" height="112" rx="26" fill="url(#og-bg)"/>
+        <rect x="1.5" y="1.5" width="109" height="109" rx="24.5" fill="none" stroke="#fff" stroke-opacity=".15" stroke-width="2"/>
+        <g transform="rotate(-90 56 56)">
+          <rect x="30" y="43" width="52" height="31" rx="8" fill="#0b1627" fill-opacity=".45" stroke="#f4f8ff" stroke-width="4.2"/>
+          <rect x="35" y="52" width="3" height="10" rx="1.5" fill="#f4f8ff" opacity=".65"/>
+          <path d="M72 58h5" fill="none" stroke="#f4f8ff" stroke-width="2" stroke-linecap="round" opacity=".55"/>
+          <path d="M30 33c13-14 39-14 52 0" fill="none" stroke="url(#og-arrow)" stroke-width="4.4" stroke-linecap="round"/>
+          <path d="M74 27l8 6-8 6" fill="none" stroke="url(#og-arrow)" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+      </svg>
+      <div class="orientation-eyebrow">TextRec. for Web</div>
+      <h2 class="orientation-title" id="orientationTitle">Rotate to portrait</h2>
+      <p class="orientation-copy" id="orientationCopy">TextRec can only be used in portrait mode on mobile. To continue, unlock screen rotation and hold your device upright.</p>
+      <span class="orientation-status">Waiting for portrait</span>
+    </div>
+  </div>
+
   <script src="strings.js"></script>
   <script src="app.js"></script>
+  <script src="orientation-guard.js"></script>
 </body>
 </html>
