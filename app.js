@@ -829,16 +829,14 @@
   }
 
   function parsePdfTokens(raw, total) {
-    var tokens = String(raw || '').split(/[\s,;]+/).filter(Boolean);
+    var tokens = String(raw || '').split(',').map(function (t) { return t.trim(); }).filter(Boolean);
     if (!tokens.length) return null;
     var out = [];
     for (var i = 0; i < tokens.length; i++) {
-      var m = tokens[i].match(/^(\d+)(?:-(\d+))?$/);
-      if (!m) return null;
-      var a = parseInt(m[1], 10);
-      var b = m[2] ? parseInt(m[2], 10) : a;
-      if (a < 1 || b < a || b > total) return null;
-      for (var n = a; n <= b; n++) out.push(n);
+      if (!/^\d+$/.test(tokens[i])) return null;
+      var n = parseInt(tokens[i], 10);
+      if (n < 1 || n > total) return null;
+      out.push(n);
     }
     out = out.filter(function (v, idx, arr) { return arr.indexOf(v) === idx; });
     out.sort(function (a, b) { return a - b; });

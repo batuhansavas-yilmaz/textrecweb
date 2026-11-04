@@ -13,7 +13,7 @@ Fotoğraftaki yazıyı metne çeviren, **tamamen tarayıcıda çalışan** küç
 
 - Kamera ile çekme, galeriden/bilgisayardan görsel seçme, PDF seçme, sürükle-bırak, panodan yapıştırma
 - Fotoğraf için isteğe bağlı kırpma ve 90° döndürme adımı (Cropper.js)
-- PDF OCR: tüm sayfalar, sayfa aralığı veya belirli sayfalar (örn. `3, 4, 8` ya da `2-5`); sayfa sayfa ilerleme göstergesi
+- PDF OCR: tüm sayfalar, sayfa aralığı veya virgülle ayrılmış belirli sayfalar (örn. `3, 4, 8`); sayfa sayfa ilerleme göstergesi
 - Arayüz dili İngilizce; OCR dili sistem diline göre otomatik seçilir
 - Yazı tanıma Türkçe + İngilizce + Latin alfabesi kullanan diller (PP-OCRv6 modeli); satırlar okuma sırasına göre paragraf akışına birleştirilir (kelime kelime dökmez). Yatık, ters (180°) ve aynalanmış fotoğraflar otomatik algılanıp düzeltilir.
 - Sonucu düzenleme, araç menüsüyle yakınlaştırma ve tek dokunuşla kopyalama
