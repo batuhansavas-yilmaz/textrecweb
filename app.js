@@ -1577,7 +1577,7 @@
       else succMessage.textContent = t('succDownload');
     }
     if (succOpen) succOpen.hidden = !lastFile || !/\.txt$/i.test(lastFile.name);
-    if (succShare) succShare.hidden = !shareAvailable;
+    if (succShare) succShare.hidden = !(navigator.share && navigator.canShare);
     if (succFileName) succFileName.textContent = lastFile ? lastFile.name : '';
     dialogOpen(successDialog);
   }
