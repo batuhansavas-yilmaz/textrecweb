@@ -36,6 +36,7 @@ window.TEXTREC_STR = {
     pdfRangeEndLabel: 'Last page',
     pdfListLabel: 'Pages to scan',
     pdfPageError: 'Enter page numbers separated by commas, e.g. 3, 4, 8.',
+    pdfPageRangeError: 'Page numbers must be between 1 and {max}.',
     pdfStart: 'START',
     pdfNoText: 'No text was detected in the selected PDF pages.',
     ariaZoomIn: 'Zoom in',

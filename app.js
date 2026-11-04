@@ -831,17 +831,17 @@
 
   function parsePdfTokens(raw, total) {
     var tokens = String(raw || '').split(',').map(function (t) { return t.trim(); }).filter(Boolean);
-    if (!tokens.length) return null;
+    if (!tokens.length) return { error: 'format' };
     var out = [];
     for (var i = 0; i < tokens.length; i++) {
-      if (!/^\d+$/.test(tokens[i])) return null;
+      if (!/^\d+$/.test(tokens[i])) return { error: 'format' };
       var n = parseInt(tokens[i], 10);
-      if (n < 1 || n > total) return null;
+      if (n < 1 || n > total) return { error: 'range' };
       out.push(n);
     }
     out = out.filter(function (v, idx, arr) { return arr.indexOf(v) === idx; });
     out.sort(function (a, b) { return a - b; });
-    return out.length ? out : null;
+    return out.length ? { pages: out } : { error: 'format' };
   }
 
   function selectedPdfPages() {
@@ -850,17 +850,27 @@
     if (mode === 'all') {
       var allPages = [];
       for (var i = 1; i <= pdfPageTotal; i++) allPages.push(i);
-      return allPages;
+      return { pages: allPages };
     }
     if (mode === 'range') {
       var start = parseInt(pdfRangeStart.value, 10);
       var end = parseInt(pdfRangeEnd.value, 10);
-      if (!isFinite(start) || !isFinite(end) || start < 1 || end < start || end > pdfPageTotal) return null;
+      if (!isFinite(start) || !isFinite(end) || start < 1 || end < start) return { error: 'format' };
+      if (start > pdfPageTotal || end > pdfPageTotal) return { error: 'range' };
       var pages = [];
       for (var p = start; p <= end; p++) pages.push(p);
-      return pages;
+      return { pages: pages };
     }
     return parsePdfTokens(pdfPageList.value, pdfPageTotal);
+  }
+
+  function showPdfError(error) {
+    if (!pdfPageError) return;
+    var msg = error === 'range'
+      ? t('pdfPageRangeError').replace('{max}', String(pdfPageTotal))
+      : t('pdfPageError');
+    pdfPageError.textContent = msg;
+    pdfPageError.hidden = false;
   }
 
   function renderPdfPage(pdf, pageNum) {
@@ -1248,14 +1258,14 @@
 
   if (pdfStart) {
     pdfStart.addEventListener('click', function () {
-      var pages = selectedPdfPages();
-      if (!pages) {
-        if (pdfPageError) pdfPageError.hidden = false;
+      var selection = selectedPdfPages();
+      if (!selection || selection.error) {
+        showPdfError(selection && selection.error);
         return;
       }
       if (pdfPageError) pdfPageError.hidden = true;
       dialogClose(pdfOptionsDialog, function () {
-        runPdfOcr(pages);
+        runPdfOcr(selection.pages);
       });
     });
   }
@@ -1285,6 +1295,9 @@
 
   [pdfRangeStart, pdfRangeEnd, pdfPageList].forEach(function (input) {
     if (!input) return;
+    input.addEventListener('input', function () {
+      if (pdfPageError) pdfPageError.hidden = true;
+    });
     input.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
         e.preventDefault();
