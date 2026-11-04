@@ -1,9 +1,10 @@
-var SHELL_CACHE = 'textrec-shell-v50';
+var SHELL_CACHE = 'textrec-shell-v51';
 var OCR_CACHE = 'textrec-ocr-v2';
 var OCR_PATH = new URL('vendor/paddleocr/', self.location.href).pathname;
 var APP_SHELL = [
   './',
   './index.html',
+  './privacy/index.html',
   './style.css',
   './app.js',
   './strings.js',
@@ -56,6 +57,26 @@ self.addEventListener('activate', function (event) {
 self.addEventListener('fetch', function (event) {
   var req = event.request;
   if (req.method !== 'GET') return;
+
+  var reqPath = '';
+  try { reqPath = new URL(req.url).pathname; } catch (e) {}
+  if (req.mode === 'navigate' && /\/privacy\/?$/.test(reqPath)) {
+    event.respondWith((async function () {
+      var cached = await caches.match('./privacy/index.html');
+      if (cached) return cached;
+      try {
+        var res = await fetch(req);
+        if (res && res.ok) {
+          var cache = await caches.open(SHELL_CACHE);
+          cache.put('./privacy/index.html', res.clone());
+        }
+        return res;
+      } catch (e) {
+        return new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+      }
+    })());
+    return;
+  }
 
   if (req.mode === 'navigate') {
     event.respondWith((async function () {

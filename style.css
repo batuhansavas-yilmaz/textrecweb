@@ -1867,3 +1867,14 @@ body.orientation-locked .orientation-gate { display: flex; }
   .orientation-status { margin-top: 12px; padding: 6px 9px; font-size: 9px; }
 }
 
+
+/* ---------- Privacy link ---------- */
+.privacy-link{display:inline-flex;align-items:center;gap:4px;margin-left:8px;padding:2px 4px;border-radius:6px;color:inherit;font-size:12px;font-weight:500;text-decoration:none;opacity:.65;vertical-align:middle;white-space:nowrap}
+.privacy-link:hover{opacity:1;text-decoration:underline;text-underline-offset:3px}
+.privacy-link svg{flex:0 0 auto}
+
+
+/* ---------- Mobile appbar privacy ---------- */
+.appbar-privacy{display:none}
+@media (max-width:699px){.appbar-privacy{display:flex;position:absolute;left:8px;top:calc(6px + env(safe-area-inset-top,0px));width:44px;height:44px;align-items:center;justify-content:center;border-radius:50%;color:var(--appbar-fg);text-decoration:none;z-index:2}.appbar-privacy:hover{background:var(--hover-soft)}#backBtn{left:56px}#homeCaption .privacy-link{display:none!important}}
+
