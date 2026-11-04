@@ -1774,7 +1774,7 @@
       toast(t('toastShareUnsupported'), 4200);
       return;
     }
-    navigator.share({ files: [lastFile], title: lastFile.name }).then(function () {
+    navigator.share({ files: [lastFile] }).then(function () {
       toast(t('toastShareSuccess'), 3600);
     }).catch(function (err) {
       if (err && err.name === 'AbortError') {
