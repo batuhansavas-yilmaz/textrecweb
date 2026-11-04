@@ -293,6 +293,29 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
 .btn-elev:active { filter: brightness(0.95); }
 .btn-elev .ic { width: 22px; height: 22px; }
 
+label.btn-elev {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+label.btn-elev:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.file-input-hidden {
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 #cameraBtn, #photosBtn { width: 130px; height: 60px; }
 
 /* ---------- Result ---------- */

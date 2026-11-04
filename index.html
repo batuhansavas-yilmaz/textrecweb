@@ -53,14 +53,14 @@
           <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0-9-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
           <span data-i18n="lastResult">Last scan result</span>
         </button>
-        <button id="cameraBtn" class="btn-elev" type="button">
+        <label id="cameraBtn" class="btn-elev" for="cameraInput" role="button" tabindex="0">
           <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M9 2 7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
           <span data-i18n="btnCamera">Camera</span>
-        </button>
-        <button id="photosBtn" class="btn-elev" type="button">
+        </label>
+        <label id="photosBtn" class="btn-elev" for="fileInput" role="button" tabindex="0">
           <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2z"/></svg>
           <span data-i18n="btnPhotos">Select File</span>
-        </button>
+        </label>
         <a class="frombsy-card" href="https://batuhansavas-yilmaz.github.io/frombsy/" target="_blank" rel="noopener noreferrer" aria-label="From B.S.Y.">
           <span class="frombsy-logo" aria-hidden="true"><img src="assets/frombsy-icon.png" alt="" width="46" height="46"></span>
           <span class="frombsy-copy">
@@ -76,8 +76,8 @@
           <img src="assets/github-button.png" alt="" />
         </a>
       </div>
-      <input type="file" id="fileInput" accept="image/*,application/pdf,.pdf" hidden />
-      <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden />
+      <input type="file" id="fileInput" class="file-input-hidden" accept="image/*,application/pdf,.pdf" tabindex="-1" />
+      <input type="file" id="cameraInput" class="file-input-hidden" accept="image/*" capture="environment" tabindex="-1" />
     </main>
 
     <main id="resultView" hidden>

@@ -508,7 +508,7 @@
   }
 
   document.addEventListener('pointerdown', function (e) {
-    var btn = e.target && e.target.closest ? e.target.closest('button, a.github-btn') : null;
+    var btn = e.target && e.target.closest ? e.target.closest('button, a.github-btn, label.btn-elev') : null;
     if (!btn || btn.disabled || motionReduced()) return;
     var rect = btn.getBoundingClientRect();
     var size = Math.max(rect.width, rect.height) * 1.6;
@@ -1437,8 +1437,15 @@
     if (!resultView.hidden) lastResultText = resultText.value;
   });
 
-  cameraBtn.addEventListener('click', function () { cameraInput.click(); });
-  photosBtn.addEventListener('click', function () { fileInput.click(); });
+  [cameraBtn, photosBtn].forEach(function (el) {
+    if (!el) return;
+    el.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      if (el === cameraBtn) cameraInput.click();
+      else fileInput.click();
+    });
+  });
 
   fileInput.addEventListener('change', function () {
     pickFile(fileInput.files[0]);
