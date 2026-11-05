@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Privacy Policy — TextRec. for Web</title>
-<meta name="description" content="TextRec. for Web privacy policy">
+<title>Privacy Policy — TextRec.</title>
+<meta name="description" content="TextRec. privacy policy">
 <meta name="theme-color" content="#eaf2fa" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0c1120" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="../assets/icon.svg">
@@ -40,7 +40,7 @@ hr{border:0;border-top:1px solid var(--border);margin:26px 0}
 <body>
 <div class="page">
 <header class="topbar">
-<a class="brand" href="../"><img src="../assets/icon.svg" alt="TextRec. for Web"><span>TextRec. for Web</span></a>
+<div class="brand"><img src="../assets/icon.svg" alt="TextRec."><span>TextRec.</span></div>
 <nav class="nav" aria-label="Dil / Language">
 
 <a href="../">Web App</a>
@@ -49,26 +49,27 @@ hr{border:0;border-top:1px solid var(--border);margin:26px 0}
 </header>
 <main class="card">
 
-<h1>Privacy Policy — TextRec. for Web</h1>
+<h1>Privacy Policy — TextRec.</h1>
 <p class="meta">Last updated: November 5, 2026</p>
 <p class="meta">Data controller: Batuhan Savaş Yılmaz (From B.S.Y.) — batuhansavasyilmaztr@gmail.com — https://github.com/batuhansavas-yilmaz</p>
 <hr>
 <h2>1. Scope</h2>
-<p>This policy applies to the TextRec. web application at <strong>batuhansavas-yilmaz.github.io/textrecweb</strong>. The Android app has a separate policy.</p>
+<p>This policy applies to the TextRec. web application at <strong>batuhansavas-yilmaz.github.io/textrecweb</strong> and the TextRec. Android app (<strong>com.bsavasy.textrec</strong>). Both are operated by the same data controller and share this policy.</p>
 <h2>2. How your content is processed</h2>
-<p>Photos and PDF files you select are processed <strong>only in your browser</strong> using PaddleOCR and PDF.js. They are not uploaded to us, Firebase, or any other server. OCR text and generated output stay on your device. You can save the result as .txt or .docx; PDF export is not available on the web. When you use the system share sheet, the file is sent only to the app you choose.</p>
-<h2>3. Analytics, Performance and Remote Config</h2>
-<ul><li><strong>Firebase Analytics:</strong> screen views, feature usage and non-content events; app/device information. We do not send photos, PDFs, OCR text, or file names.</li><li><strong>Firebase Performance Monitoring:</strong> page load, model download and network performance metrics.</li><li><strong>Firebase Remote Config:</strong> fetches configuration values (for example feature flags); it does not receive your content.</li><li><strong>A/B Testing:</strong> experiments use consented Analytics data and Remote Config.</li><li><strong>Consent:</strong> analytics cookies are enabled only after you accept the in-app consent banner. If you decline, Analytics stays disabled.</li></ul>
-<h2>4. Local storage and service worker</h2>
-<p>Small preferences (OCR language and model mode) are stored in localStorage. A service worker caches app files and OCR models on your device; it does not cache your photos, PDFs, or OCR text.</p>
+<p>In the <strong>Web App</strong>, photos and PDF files you select are processed <strong>only in your browser</strong> using PaddleOCR and PDF.js. In the <strong>Android app</strong>, photos and PDF pages are processed <strong>on your device</strong> using Google ML Kit. In both cases, your photos, PDFs, OCR text, and generated output are not uploaded to us, Firebase, or any other server. You can save results as .txt or .docx; PDF export is not available. When you use the system share sheet, the file is sent only to the app you choose.</p>
+<h2>3. Firebase services</h2>
+<ul><li><strong>Firebase Analytics (Web App and Android app):</strong> screen views, feature usage, and non-content events; app/device information. We do not send photos, PDFs, OCR text, or file names.</li><li><strong>Firebase Performance Monitoring (Web App and Android app):</strong> page load, model download, OCR/PDF processing, export and network performance metrics. No content is included.</li><li><strong>Firebase Remote Config (Web App and Android app):</strong> fetches configuration values such as feature flags. It does not receive your content.</li><li><strong>Firebase Crashlytics (Android app only — Not available in the Web App):</strong> crash reports, stack traces, and device/app state used to diagnose stability issues. We do not log photos, PDFs, OCR text, or file names.</li><li><strong>Consent:</strong> Firebase Analytics is enabled only after you accept the analytics consent banner. On the Web App your choice is stored in localStorage; on the Android app it is stored in local app preferences. If you decline, Analytics stays disabled.</li></ul>
+<h2>4. Local storage</h2>
+<p>In the <strong>Web App</strong>, small preferences (OCR language, model mode, analytics consent) are stored in localStorage. A service worker caches app files and OCR models on your device; it does not cache your photos, PDFs, or OCR text.</p>
+<p>In the <strong>Android app</strong>, preferences such as analytics consent are stored in the app's local preferences. Photos, PDFs, OCR text, and exported files remain on your device; the app does not keep a cloud or in-app history.</p>
 <h2>5. Hosting logs</h2>
-<p>The app is served by GitHub Pages. GitHub may process IP address, user agent, requested URL, timestamps, and security/error logs to deliver and protect the service.</p>
+<p>The <strong>Web App</strong> is served by GitHub Pages and Firebase Hosting (Not available in the Mobile App). These providers may process IP address, user agent, requested URL, timestamps, and security/error logs to deliver and protect the service. The Android app does not use Firebase Hosting.</p>
 <h2>6. Sharing and retention</h2>
-<p>We do not sell personal data. We do not store your photos, PDFs, or OCR text. Local settings and cached files remain on your device until you clear site data. Analytics data follows Google Analytics retention (2 or 14 months); hosting logs follow GitHub policies.</p>
+<p>We do not sell personal data. We do not store your photos, PDFs, or OCR text. Local settings, cached files, and the web service worker cache remain on your device until you clear site data or app data. Analytics data follows Google Analytics retention (2 or 14 months); hosting logs follow GitHub and Firebase policies; Crashlytics reports follow Firebase retention policies.</p>
 <h2>7. Your rights</h2>
-<p>You may request access, correction, deletion, restriction, objection, and withdrawal of consent. You can clear local data by clearing browser site data. For requests, contact us. You may complain to your local data protection authority (KVKK in Turkey or your EU supervisory authority).</p>
+<p>You may request access, correction, deletion, restriction, objection, and withdrawal of consent. On the Web App you can clear local data by clearing browser site data; on the Android app you can clear app data. To withdraw Analytics consent, clear the app's or site's local data and choose Decline on the next launch. For requests, contact us. You may complain to your local data protection authority (KVKK in Turkey or your EU supervisory authority).</p>
 <h2>8. International transfers, children and security</h2>
-<p>Google Firebase and GitHub may process technical data outside your country under appropriate safeguards. TextRec is not directed to children under 13. The site uses HTTPS; OCR processing is local.</p>
+<p>Google Firebase and GitHub may process technical data outside your country under appropriate safeguards. TextRec is not directed to children under 13. The Web App uses HTTPS; OCR processing is local. The Android app processes OCR on-device and does not upload your content.</p>
 <h2>9. Contact</h2>
 <p>Batuhan Savaş Yılmaz (From B.S.Y.) — batuhansavasyilmaztr@gmail.com — https://github.com/batuhansavas-yilmaz</p>
 
