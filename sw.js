@@ -1,4 +1,4 @@
-var SHELL_CACHE = 'textrec-shell-v51';
+var SHELL_CACHE = 'textrec-shell-v52';
 var OCR_CACHE = 'textrec-ocr-v2';
 var OCR_PATH = new URL('vendor/paddleocr/', self.location.href).pathname;
 var APP_SHELL = [
@@ -9,6 +9,7 @@ var APP_SHELL = [
   './app.js',
   './strings.js',
   './orientation-guard.js',
+  './firebase-extras.js',
   './manifest.webmanifest',
   './vendor/pdfjs/pdf.min.js',
   './vendor/pdfjs/pdf.worker.min.js',

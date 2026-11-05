@@ -24,7 +24,7 @@ body{margin:0;min-height:100vh;background:radial-gradient(900px 600px at 108% -1
 .nav a:hover{color:var(--txt)}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:30px 34px;box-shadow:0 24px 60px -32px rgba(0,0,0,.35)}
 h1{font-size:28px;line-height:1.2;letter-spacing:-.03em;margin:0 0 4px}
-h2{font-size:19px;line-height:1.3;letter-spacing:-.02em;margin:28px 0 8px;scroll-margin-top:18px}
+h2{font-size:19px;line-height:1.3;letter-spacing:-.02em;margin:28px 0 8px}
 p,li{font-size:13.5px;color:var(--muted)}
 ul{padding-left:20px;margin:8px 0 14px}
 li{margin-bottom:5px}
@@ -49,48 +49,28 @@ hr{border:0;border-top:1px solid var(--border);margin:26px 0}
 </header>
 <main class="card">
 
-<section id="english">
 <h1>Privacy Policy — TextRec. for Web</h1>
 <p class="meta">Last updated: November 5, 2026</p>
 <p class="meta">Data controller: Batuhan Savaş Yılmaz (From B.S.Y.) — batuhansavasyilmaztr@gmail.com — https://github.com/batuhansavas-yilmaz</p>
 <hr>
 <h2>1. Scope</h2>
 <p>This policy applies to the TextRec. web application at <strong>batuhansavas-yilmaz.github.io/textrecweb</strong>. The Android app has a separate policy.</p>
-
 <h2>2. How your content is processed</h2>
-<p>Photos and PDF files you select are processed <strong>only in your browser</strong> using PaddleOCR and PDF.js. They are not uploaded to us, Firebase, or any other server. OCR text and generated output stay on your device.</p><p>You can save the result as .txt or .docx. PDF export is not available on the web. When you use the system share sheet, the file is sent only to the app or service you choose; we do not receive it.</p>
-
-<h2>3. Local storage and service worker</h2>
-<ul><li>Small preferences (OCR language and model mode) are stored in browser localStorage.</li><li>A service worker caches app files and OCR models on your device; it does not cache your photos, PDFs, or OCR text.</li><li>No advertising cookies are used.</li></ul>
-
-<h2>4. Hosting logs</h2>
-<p>The app is served by GitHub Pages. GitHub may process technical data such as IP address, user agent, requested URL, timestamps, and security/error logs to deliver and protect the service. GitHub's retention periods and privacy terms apply.</p>
-
-<h2>5. What we do not use</h2>
-<p>We do not use accounts, advertising, Firebase Analytics, Crashlytics, or Performance Monitoring in the web app. We do not sell personal data.</p>
-
-<h2>6. Retention</h2>
-<p>We do not store your photos, PDFs, or OCR text. Local settings and cached files remain on your device until you clear site data. Hosting logs are retained by GitHub according to its policies.</p>
-
+<p>Photos and PDF files you select are processed <strong>only in your browser</strong> using PaddleOCR and PDF.js. They are not uploaded to us, Firebase, or any other server. OCR text and generated output stay on your device. You can save the result as .txt or .docx; PDF export is not available on the web. When you use the system share sheet, the file is sent only to the app you choose.</p>
+<h2>3. Analytics, Performance and Remote Config</h2>
+<ul><li><strong>Firebase Analytics:</strong> screen views, feature usage and non-content events; app/device information. We do not send photos, PDFs, OCR text, or file names.</li><li><strong>Firebase Performance Monitoring:</strong> page load, model download and network performance metrics.</li><li><strong>Firebase Remote Config:</strong> fetches configuration values (for example feature flags); it does not receive your content.</li><li><strong>A/B Testing:</strong> experiments use consented Analytics data and Remote Config.</li><li><strong>Consent:</strong> analytics cookies are enabled only after you accept the in-app consent banner. If you decline, Analytics stays disabled.</li></ul>
+<h2>4. Local storage and service worker</h2>
+<p>Small preferences (OCR language and model mode) are stored in localStorage. A service worker caches app files and OCR models on your device; it does not cache your photos, PDFs, or OCR text.</p>
+<h2>5. Hosting logs</h2>
+<p>The app is served by GitHub Pages. GitHub may process IP address, user agent, requested URL, timestamps, and security/error logs to deliver and protect the service.</p>
+<h2>6. Sharing and retention</h2>
+<p>We do not sell personal data. We do not store your photos, PDFs, or OCR text. Local settings and cached files remain on your device until you clear site data. Analytics data follows Google Analytics retention (2 or 14 months); hosting logs follow GitHub policies.</p>
 <h2>7. Your rights</h2>
-<p>You may request access, correction, deletion, restriction, objection, and withdrawal of consent where applicable. You can clear all local data by clearing your browser's site data. For requests, contact us. You may also complain to your local data protection authority (KVKK in Turkey or your EU supervisory authority).</p>
-
-<h2>8. International transfers</h2>
-<p>GitHub Pages may process technical data outside your country under GitHub's safeguards.</p>
-
-<h2>9. Children</h2>
-<p>TextRec is not directed to children under 13 (or the applicable age in your country). We do not knowingly collect data from children.</p>
-
-<h2>10. Security</h2>
-<p>The site is served over HTTPS. OCR processing is local. We do not operate a server that stores your content.</p>
-
-<h2>11. Changes</h2>
-<p>We may update this policy. The latest version will be posted on this page with a new “Last updated” date.</p>
-
-<h2>12. Contact</h2>
+<p>You may request access, correction, deletion, restriction, objection, and withdrawal of consent. You can clear local data by clearing browser site data. For requests, contact us. You may complain to your local data protection authority (KVKK in Turkey or your EU supervisory authority).</p>
+<h2>8. International transfers, children and security</h2>
+<p>Google Firebase and GitHub may process technical data outside your country under appropriate safeguards. TextRec is not directed to children under 13. The site uses HTTPS; OCR processing is local.</p>
+<h2>9. Contact</h2>
 <p>Batuhan Savaş Yılmaz (From B.S.Y.) — batuhansavasyilmaztr@gmail.com — https://github.com/batuhansavas-yilmaz</p>
-
-</section>
 
 </main>
 <p class="foot">© 2026 Batuhan Savaş Yılmaz (From B.S.Y.)</p>
