@@ -1876,5 +1876,5 @@ body.orientation-locked .orientation-gate { display: flex; }
 
 /* ---------- Mobile appbar privacy ---------- */
 .appbar-privacy{display:none}
-@media (max-width:699px){.appbar-privacy{display:flex;position:absolute;left:8px;top:calc(6px + env(safe-area-inset-top,0px));width:44px;height:44px;align-items:center;justify-content:center;border-radius:50%;color:var(--appbar-fg);text-decoration:none;z-index:2}.appbar-privacy:hover{background:var(--hover-soft)}#backBtn{left:56px}#homeCaption .privacy-link{display:none!important}body.result-open .appbar-privacy{display:none!important}}
+@media (max-width:699px){.appbar-privacy{display:flex;position:absolute;left:8px;top:calc(6px + env(safe-area-inset-top,0px));width:44px;height:44px;align-items:center;justify-content:center;border-radius:50%;color:var(--appbar-fg);text-decoration:none;z-index:2}.appbar-privacy:hover{background:var(--hover-soft)}#backBtn{left:56px}body.result-open #backBtn{left:8px}#homeCaption .privacy-link{display:none!important}body.result-open .appbar-privacy{display:none!important}}
 
