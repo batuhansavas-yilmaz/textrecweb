@@ -565,6 +565,7 @@
   }
 
   function goHome() {
+    document.body.classList.remove('result-open');
     var fromResult = !resultView.hidden;
     dialogHideNow(cropDialog);
     dialogHideNow(loadingDialog);
@@ -1186,6 +1187,7 @@
   }
 
   function showResult(text) {
+    document.body.classList.add('result-open');
     resetPrebuilt();
     lastScanFile = imageFile;
     lastResultText = text;
