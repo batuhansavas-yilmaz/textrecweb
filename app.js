@@ -120,6 +120,7 @@
   var resultSheet = document.querySelector('.result-sheet');
   var resultCorners = document.querySelectorAll('.result-corner');
   var resultRotateBtn = $('resultRotateBtn');
+  var resultMirrorBtn = $('resultMirrorBtn');
   var fabs = $('fabs');
   var fabMain = $('fabMain');
   var fabIconToolbox = $('fabIconToolbox');
@@ -281,11 +282,24 @@
     el.className = 'toast';
     el.textContent = msg;
     toasts.appendChild(el);
-    requestAnimationFrame(function () { el.classList.add('show'); });
-    setTimeout(function () {
+    void el.offsetWidth;
+    el.classList.add('show');
+
+    var duration = ms || 2000;
+    function hide() {
       el.classList.remove('show');
       setTimeout(function () { el.remove(); }, 250);
-    }, ms || 2000);
+    }
+    if (document.visibilityState === 'hidden') {
+      var onVisible = function () {
+        if (document.visibilityState !== 'visible') return;
+        document.removeEventListener('visibilitychange', onVisible);
+        setTimeout(hide, duration);
+      };
+      document.addEventListener('visibilitychange', onVisible);
+    } else {
+      setTimeout(hide, duration);
+    }
   }
 
   function applyLang() {
@@ -405,12 +419,28 @@
     if (resultSheet) resultSheet.classList.remove('resizing');
   }
 
-  function rotateResultImage() {
-    if (!imageFile || !imageUrl || !resultImage || !resultRotateBtn) return;
-    resultRotateBtn.disabled = true;
+  function transformResultImage(btn, name, draw) {
+    if (!imageFile || !imageUrl || !resultImage || !btn) return;
+    btn.disabled = true;
     var img = new Image();
     img.onload = function () {
       var canvas = document.createElement('canvas');
+      draw(canvas, img);
+      canvas.toBlob(function (blob) {
+        btn.disabled = false;
+        if (!blob) return;
+        var file = new File([blob], name, { type: 'image/jpeg' });
+        setImage(file);
+        lastScanFile = file;
+        resultImage.src = imageUrl;
+      }, 'image/jpeg', 0.94);
+    };
+    img.onerror = function () { btn.disabled = false; };
+    img.src = imageUrl;
+  }
+
+  function rotateResultImage() {
+    transformResultImage(resultRotateBtn, 'scan-rotated.jpg', function (canvas, img) {
       canvas.width = img.naturalHeight;
       canvas.height = img.naturalWidth;
       var ctx = canvas.getContext('2d');
@@ -419,17 +449,20 @@
       ctx.translate(canvas.width / 2, canvas.height / 2);
       ctx.rotate(Math.PI / 2);
       ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
-      canvas.toBlob(function (blob) {
-        resultRotateBtn.disabled = false;
-        if (!blob) return;
-        var rotated = new File([blob], 'scan-rotated.jpg', { type: 'image/jpeg' });
-        setImage(rotated);
-        lastScanFile = rotated;
-        resultImage.src = imageUrl;
-      }, 'image/jpeg', 0.94);
-    };
-    img.onerror = function () { resultRotateBtn.disabled = false; };
-    img.src = imageUrl;
+    });
+  }
+
+  function mirrorResultImage() {
+    transformResultImage(resultMirrorBtn, 'scan-mirrored.jpg', function (canvas, img) {
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      var ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(img, 0, 0);
+    });
   }
 
   function pageSlide(el, from, to, done) {
@@ -1440,6 +1473,7 @@
     resultImage.addEventListener('dragstart', function (e) { e.preventDefault(); });
   }
   if (resultRotateBtn) resultRotateBtn.addEventListener('click', rotateResultImage);
+  if (resultMirrorBtn) resultMirrorBtn.addEventListener('click', mirrorResultImage);
   if (resultCorners.length) {
     resultCorners.forEach(function (corner) {
       corner.addEventListener('pointerdown', onPreviewPointerDown);

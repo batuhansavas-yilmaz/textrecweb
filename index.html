@@ -27,6 +27,14 @@
         <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
       </button>
       <h1 id="appbarTitle" data-i18n="appbarTitle">Scan Text in Photo</h1>
+      <div class="result-tools">
+        <button id="resultRotateBtn" class="result-tool" type="button" data-i18n-aria="ariaRotate" title="Rotate">
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20 4v7h-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button id="resultMirrorBtn" class="result-tool" type="button" data-i18n-aria="ariaMirror" title="Mirror">
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 21h2v-2h-2v2zm4-12h2V7h-2v2zM3 5v14c0 1.1.9 2 2 2h4v-2H5V5h4V3H5c-1.1 0-2 .9-2 2zm16-2v2h2c0-1.1-.9-2-2-2zm-8 20h2V1h-2v22zm8-6h2v-2h-2v2zM15 5h2V3h-2v2zm4 8h2v-2h-2v2zm0 8c1.1 0 2-.9 2-2h-2v2z"/></svg>
+        </button>
+      </div>
       <button id="lastResultBtn" class="appbar-action" type="button" aria-label="Last scan result" data-i18n-aria="lastResult" title="Last scan result" hidden>
         <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0-9-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
       </button>
@@ -88,9 +96,6 @@
           <span class="result-corner r-tr"></span>
           <span class="result-corner r-bl"></span>
           <span class="result-corner r-br"></span>
-          <button id="resultRotateBtn" class="result-rotate" type="button" data-i18n-aria="ariaRotate" title="Rotate">
-            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20 4v7h-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
           <img id="resultImage" alt="" draggable="false" />
         </div>
       </section>
