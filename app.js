@@ -116,6 +116,10 @@
   var warnOk = $('warnOk');
   var resultText = $('resultText');
   var resultImage = $('resultImage');
+  var resultPageNav = $('resultPageNav');
+  var resultPrevPage = $('resultPrevPage');
+  var resultNextPage = $('resultNextPage');
+  var resultPageLabel = $('resultPageLabel');
   var resultPreview = document.querySelector('.result-preview');
   var resultSheet = document.querySelector('.result-sheet');
   var resultCorners = document.querySelectorAll('.result-corner');
@@ -165,6 +169,9 @@
   var lastFile = null;
   var lastFileUrl = null;
   var lastScanFile = null;
+  var lastScanPages = null;
+  var resultPages = [];
+  var resultPageIndex = 0;
   var lastResultText = '';
   var pdfFile = null;
   var pdfDoc = null;
@@ -313,8 +320,57 @@
     appbarTitle.textContent = resultView.hidden ? t('appbarTitle') : t('resultTitle');
   }
 
-  function setImage(file) {
+  function updateResultPageNav() {
+    if (!resultPageNav) return;
+    var multi = resultPages.length > 1;
+    resultPageNav.hidden = !multi;
+    if (!multi) return;
+    if (resultPageLabel) {
+      resultPageLabel.textContent = (resultPageIndex + 1) + ' / ' + resultPages.length;
+    }
+    if (resultPrevPage) resultPrevPage.disabled = resultPageIndex <= 0;
+    if (resultNextPage) resultNextPage.disabled = resultPageIndex >= resultPages.length - 1;
+  }
+
+  function revokeResultPages() {
+    resultPages.forEach(function (page) {
+      if (!page.url) return;
+      try { URL.revokeObjectURL(page.url); } catch (e) {}
+    });
+    resultPages = [];
+    resultPageIndex = 0;
+    updateResultPageNav();
+  }
+
+  function setResultPages(files) {
     if (imageUrl) URL.revokeObjectURL(imageUrl);
+    imageUrl = null;
+    imageFile = null;
+    revokeResultPages();
+    resultPages = files.map(function (file) {
+      return { file: file, url: URL.createObjectURL(file) };
+    });
+    resultPageIndex = 0;
+    if (resultPages.length) {
+      imageFile = resultPages[0].file;
+      imageUrl = resultPages[0].url;
+    }
+    updateResultPageNav();
+  }
+
+  function setResultPage(index) {
+    if (index < 0 || index >= resultPages.length) return;
+    resultPageIndex = index;
+    imageFile = resultPages[index].file;
+    imageUrl = resultPages[index].url;
+    if (resultImage) resultImage.src = imageUrl;
+    updateResultPageNav();
+    requestAnimationFrame(function () { fitPreview(true); });
+  }
+
+  function setImage(file, keepResultPages) {
+    if (imageUrl) URL.revokeObjectURL(imageUrl);
+    if (!keepResultPages) revokeResultPages();
     imageFile = file;
     imageUrl = URL.createObjectURL(file);
   }
@@ -323,6 +379,7 @@
     if (imageUrl) URL.revokeObjectURL(imageUrl);
     imageUrl = null;
     imageFile = null;
+    revokeResultPages();
   }
 
   function clearPdf() {
@@ -430,7 +487,7 @@
         btn.disabled = false;
         if (!blob) return;
         var file = new File([blob], name, { type: 'image/jpeg' });
-        setImage(file);
+        setImage(file, true);
         lastScanFile = file;
         resultImage.src = imageUrl;
       }, 'image/jpeg', 0.94);
@@ -592,8 +649,13 @@
       return;
     }
     if (imageUrl) URL.revokeObjectURL(imageUrl);
-    imageFile = lastScanFile;
-    imageUrl = URL.createObjectURL(lastScanFile);
+    if (lastScanPages && lastScanPages.length) {
+      setResultPages(lastScanPages);
+    } else {
+      revokeResultPages();
+      imageFile = lastScanFile;
+      imageUrl = URL.createObjectURL(lastScanFile);
+    }
     showResult(lastResultText);
   }
 
@@ -935,13 +997,13 @@
     setLoadingStatus(t('statusPdfReading'));
     dialogOpen(loadingDialog);
     var results = [];
-    var firstBlob = null;
+    var pageBlobs = [];
     var chain = Promise.resolve();
     pages.forEach(function (pageNum, index) {
       chain = chain.then(function () {
         setLoadingStatus(t('statusPdfPage').replace('{n}', String(index + 1)).replace('{total}', String(pages.length)));
         return renderPdfPage(pdfDoc, pageNum).then(function (blob) {
-          if (!firstBlob) firstBlob = blob;
+          pageBlobs.push({ page: pageNum, blob: blob });
           return ocrWithFallback(blob);
         }).then(function (out) {
           var pageText = itemsToText(out.items);
@@ -967,8 +1029,12 @@
         }).join('\n\n');
       }
       clearPdf();
-      if (firstBlob) {
-        setImage(new File([firstBlob], 'pdf-page-' + pages[0] + '.jpg', { type: 'image/jpeg' }));
+      if (pageBlobs.length) {
+        var pageFiles = pageBlobs.map(function (item) {
+          return new File([item.blob], 'pdf-page-' + item.page + '.jpg', { type: 'image/jpeg' });
+        });
+        lastScanPages = pageFiles;
+        setResultPages(pageFiles);
       }
       showResult(text);
     }).catch(function (err) {
@@ -1207,6 +1273,8 @@
           dialogOpen(warnDialog);
           return;
         }
+        lastScanPages = null;
+        revokeResultPages();
         showResult(text);
       })
       .catch(function (err) {
@@ -1230,7 +1298,13 @@
     nameError.hidden = true;
     setFabsCollapsed(true);
     applySize();
+    if (resultPages.length) {
+      if (resultPageIndex >= resultPages.length) resultPageIndex = 0;
+      imageFile = resultPages[resultPageIndex].file;
+      imageUrl = resultPages[resultPageIndex].url;
+    }
     if (resultImage) resultImage.src = imageUrl || '';
+    updateResultPageNav();
     resultView.classList.remove('split-reveal');
     resultView.hidden = false;
     if (isDesktop()) {
@@ -1474,6 +1548,16 @@
   }
   if (resultRotateBtn) resultRotateBtn.addEventListener('click', rotateResultImage);
   if (resultMirrorBtn) resultMirrorBtn.addEventListener('click', mirrorResultImage);
+  if (resultPrevPage) {
+    resultPrevPage.addEventListener('click', function () {
+      setResultPage(resultPageIndex - 1);
+    });
+  }
+  if (resultNextPage) {
+    resultNextPage.addEventListener('click', function () {
+      setResultPage(resultPageIndex + 1);
+    });
+  }
   if (resultCorners.length) {
     resultCorners.forEach(function (corner) {
       corner.addEventListener('pointerdown', onPreviewPointerDown);
