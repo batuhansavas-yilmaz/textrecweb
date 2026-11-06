@@ -305,6 +305,21 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
 .btn-elev:active { filter: brightness(0.95); }
 .btn-elev .ic { width: 22px; height: 22px; }
 
+.btn-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.btn-sub {
+  font-size: .72em;
+  font-weight: 400;
+  opacity: .9;
+}
+
 label.btn-elev {
   position: relative;
   overflow: hidden;

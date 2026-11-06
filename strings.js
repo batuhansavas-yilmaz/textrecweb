@@ -3,6 +3,7 @@ window.TEXTREC_STR = {
     appbarTitle: 'TextRec. For Web',
     btnCamera: 'Camera',
     btnPhotos: 'Select File',
+    btnPhotosSub: '(PDF or Photo)',
     animTitle: 'Snap,Scan,Save..',
     animSubtitle: 'Perform text scanning in an easy way.',
     animFooter: 'To Make Life Easier',
