@@ -215,7 +215,11 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
   #scanLine { animation-duration: 12s; }
 }
 
-#homeCaption { font-size: 20px; font-weight: 700; color: var(--txt); }
+#privacyFooter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 .accuracy-toggle {
   display: inline-flex;
@@ -230,6 +234,8 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
   font-weight: 500;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
   -webkit-tap-highlight-color: transparent;
+  position: relative;
+  top: -10px;
 }
 
 .accuracy-toggle::before {
@@ -849,7 +855,7 @@ label.btn-elev:focus-visible {
 
   .btn-elev .ic { width: clamp(22px, min(4.4vh, 3vw), 54px); height: clamp(22px, min(4.4vh, 3vw), 54px); }
 
-  #homeCaption { grid-column: 1 / -1; grid-row: 2; font-size: 22px; }
+  #privacyFooter { grid-column: 1 / -1; grid-row: 2; }
 
   #accuracyBtn { display: none !important; }
 
@@ -1113,7 +1119,7 @@ label.btn-elev:focus-visible {
   background: var(--crop-scrim);
 }
 
-#homeCaption {
+#privacyFooter {
   color: var(--txt);
 }
 
@@ -1897,12 +1903,7 @@ body.orientation-locked .orientation-gate { display: flex; }
 
 
 /* ---------- Privacy link ---------- */
-.privacy-link{display:inline-flex;align-items:center;gap:4px;margin-left:8px;padding:2px 4px;border-radius:6px;color:inherit;font-size:12px;font-weight:500;text-decoration:none;opacity:.65;vertical-align:middle;white-space:nowrap}
+.privacy-link{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:8px;color:inherit;font-size:13px;font-weight:600;text-decoration:none;opacity:.62;white-space:nowrap}
 .privacy-link:hover{opacity:1;text-decoration:underline;text-underline-offset:3px}
 .privacy-link svg{flex:0 0 auto}
-
-
-/* ---------- Mobile appbar privacy ---------- */
-.appbar-privacy{display:none}
-@media (max-width:699px){.appbar-privacy{display:flex;position:absolute;left:8px;top:calc(6px + env(safe-area-inset-top,0px));width:44px;height:44px;align-items:center;justify-content:center;border-radius:50%;color:var(--appbar-fg);text-decoration:none;z-index:2}.appbar-privacy:hover{background:var(--hover-soft)}#backBtn{left:56px}body.result-open #backBtn{left:8px}#homeCaption .privacy-link{display:none!important}body.result-open .appbar-privacy{display:none!important}}
 

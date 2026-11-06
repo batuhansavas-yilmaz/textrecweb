@@ -1,6 +1,6 @@
 window.TEXTREC_STR = {
   en: {
-    appbarTitle: 'Scan Text in Photo',
+    appbarTitle: 'TextRec. For Web',
     btnCamera: 'Camera',
     btnPhotos: 'Select File',
     animTitle: 'Snap,Scan,Save..',
