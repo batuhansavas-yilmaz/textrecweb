@@ -111,6 +111,11 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, .github-btn:f
   text-overflow: ellipsis;
 }
 
+@media (max-width: 699px) {
+  body.result-open #appbar { justify-content: flex-start; }
+  body.result-open #appbarTitle { padding: 0 52px 0 64px; text-align: left; }
+}
+
 #backBtn {
   position: absolute;
   left: 8px;
